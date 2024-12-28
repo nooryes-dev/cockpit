@@ -1,5 +1,6 @@
 import {
   CreateDateColumn,
+  DeleteDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -17,4 +18,9 @@ export class _Preset {
     name: 'updated_at',
   })
   updatedAt: Date;
+
+  @DeleteDateColumn({
+    name: 'deleted_at',
+  })
+  deletedAt: Date;
 }

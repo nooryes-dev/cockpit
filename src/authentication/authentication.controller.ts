@@ -1,6 +1,7 @@
 import { Controller, Post } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiUnifiedResponse } from 'src/decorators/api-unified-response/api-unified-response.decorator';
 
 @ApiTags('认证')
 @Controller('authentication')
@@ -8,14 +9,16 @@ export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
   @ApiOperation({ description: '登录' })
+  @ApiUnifiedResponse({ type: 'string', description: 'jwt token' })
   @Post('sign-in')
   signIn() {
-    return console.log('登录成功');
+    return '12321321';
   }
 
   @ApiOperation({ description: '注册' })
+  @ApiUnifiedResponse({ type: 'string', description: 'jwt token' })
   @Post('sign-up')
   signUp() {
-    return console.log('注册成功');
+    return '12321321';
   }
 }

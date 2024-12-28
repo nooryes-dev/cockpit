@@ -16,4 +16,11 @@ export class ConfigService {
   get jwtSecret() {
     return this.#get(NameSpaceToken.Jwt, PropertyToken.Secret);
   }
+
+  /**
+   * @description 应用 code
+   */
+  get appCode() {
+    return this.#get(NameSpaceToken.App, PropertyToken.Code);
+  }
 }
