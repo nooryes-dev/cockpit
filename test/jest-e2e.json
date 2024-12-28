@@ -12,6 +12,10 @@
   },
   "moduleNameMapper": {
     "@/libs/database/(.*)": "<rootDir>/../libs/database/src/$1",
-    "@/libs/database": "<rootDir>/../libs/database/src"
+    "@/libs/database": "<rootDir>/../libs/database/src",
+    "@/libs/config/(.*)": "<rootDir>/../libs/config/src/$1",
+    "@/libs/config": "<rootDir>/../libs/config/src",
+    "@/libs/passport/(.*)": "<rootDir>/../libs/passport/src/$1",
+    "@/libs/passport": "<rootDir>/../libs/passport/src"
   }
 }

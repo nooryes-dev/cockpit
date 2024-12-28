@@ -23,6 +23,18 @@
       ],
       "@/libs/database/*": [
         "libs/database/src/*"
+      ],
+      "@/libs/config": [
+        "libs/config/src"
+      ],
+      "@/libs/config/*": [
+        "libs/config/src/*"
+      ],
+      "@/libs/passport": [
+        "libs/passport/src"
+      ],
+      "@/libs/passport/*": [
+        "libs/passport/src/*"
       ]
     }
   }
