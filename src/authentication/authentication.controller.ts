@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response/api-unified-response.decorator';
@@ -20,5 +20,12 @@ export class AuthenticationController {
   @Post('sign-up')
   signUp() {
     return '12321321';
+  }
+
+  @ApiOperation({ description: '获取非对称私钥' })
+  @ApiUnifiedResponse({ type: 'string', description: '非对称私钥' })
+  @Get('private-key')
+  getPrivateKey() {
+    return this.authenticationService.getPrivateKey();
   }
 }

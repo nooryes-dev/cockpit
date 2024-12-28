@@ -23,4 +23,11 @@ export class ConfigService {
   get appCode() {
     return this.#get(NameSpaceToken.App, PropertyToken.Code);
   }
+
+  /**
+   * @description 非对称私钥
+   */
+  get rsaPrivateKey() {
+    return this.#get(NameSpaceToken.Rsa, PropertyToken.PrivateKey);
+  }
 }
