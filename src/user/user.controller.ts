@@ -2,7 +2,7 @@ import { Controller, Body, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiUnifiedResponse } from 'src/decorators/api-unified-response/api-unified-response.decorator';
+import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 
 @ApiTags('用户')
 @Controller('user')

@@ -1,7 +1,20 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiUnifiedResponse } from 'src/decorators/api-unified-response/api-unified-response.decorator';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
+import { SignInDto } from './dto/sign-in.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { WhoAmI } from 'src/decorators/who-am-i.decorator';
+import { User } from '@/libs/database';
+import { JwtSignedInterceptor } from 'src/interceptors/jwt-signed/jwt-signed.interceptor';
+import { SignUpDto } from './dto/sign-up.dto';
 
 @ApiTags('认证')
 @Controller('authentication')
@@ -9,23 +22,27 @@ export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
   @ApiOperation({ description: '登录' })
+  @ApiBody({ type: SignInDto })
   @ApiUnifiedResponse({ type: 'string', description: 'jwt token' })
+  @UseGuards(AuthGuard('local'))
+  @UseInterceptors(JwtSignedInterceptor)
   @Post('sign-in')
-  signIn() {
-    return '12321321';
+  signIn(@WhoAmI() user: User) {
+    return user;
   }
 
   @ApiOperation({ description: '注册' })
   @ApiUnifiedResponse({ type: 'string', description: 'jwt token' })
+  @UseInterceptors(JwtSignedInterceptor)
   @Post('sign-up')
-  signUp() {
-    return '12321321';
+  signUp(@Body() signUpDto: SignUpDto) {
+    return this.authenticationService.signUp(signUpDto);
   }
 
   @ApiOperation({ description: '获取非对称私钥' })
   @ApiUnifiedResponse({ type: 'string', description: '非对称私钥' })
-  @Get('private-key')
-  getPrivateKey() {
-    return this.authenticationService.getPrivateKey();
+  @Get('public-key')
+  getPublicKey() {
+    return this.authenticationService.getPublicKey();
   }
 }

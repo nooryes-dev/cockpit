@@ -30,4 +30,11 @@ export class ConfigService {
   get rsaPrivateKey() {
     return this.#get(NameSpaceToken.Rsa, PropertyToken.PrivateKey);
   }
+
+  /**
+   * @description 非对称公钥
+   */
+  get rsaPublicKey() {
+    return this.#get(NameSpaceToken.Rsa, PropertyToken.PublicKey);
+  }
 }
