@@ -2,7 +2,6 @@ import { ConfigService } from '@/libs/config';
 import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
-import { constants, privateDecrypt } from 'crypto';
 
 @Injectable()
 export class AuthenticationService {
@@ -30,27 +29,7 @@ export class AuthenticationService {
   signUp({ password, ..._signUp }: SignUpDto) {
     return this.userService.signUp({
       ..._signUp,
-      password: this.decryptByRsaPrivateKey(password),
+      password: this.userService.decryptByRsaPrivateKey(password),
     });
-  }
-
-  /**
-   * @description 利用RSA私钥解密前端传输过来的密文密码
-   */
-  decryptByRsaPrivateKey(encoding: string): string {
-    const privateKey = this.configService.rsaPrivateKey;
-
-    if (!privateKey) {
-      return encoding;
-    }
-
-    try {
-      return privateDecrypt(
-        { key: privateKey, padding: constants.RSA_PKCS1_PADDING },
-        Buffer.from(encoding, 'base64'),
-      ).toString();
-    } catch {
-      return encoding;
-    }
   }
 }

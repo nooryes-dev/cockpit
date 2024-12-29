@@ -23,7 +23,11 @@ export class AuthenticationController {
 
   @ApiOperation({ description: '登录' })
   @ApiBody({ type: SignInDto })
-  @ApiUnifiedResponse({ type: 'string', description: 'jwt token' })
+  @ApiUnifiedResponse({
+    type: 'string',
+    description: 'jwt token',
+    default: 'jwt-token',
+  })
   @UseGuards(AuthGuard('local'))
   @UseInterceptors(JwtSignedInterceptor)
   @Post('sign-in')
@@ -32,7 +36,11 @@ export class AuthenticationController {
   }
 
   @ApiOperation({ description: '注册' })
-  @ApiUnifiedResponse({ type: 'string', description: 'jwt token' })
+  @ApiUnifiedResponse({
+    type: 'string',
+    description: 'jwt token',
+    default: 'jwt-token',
+  })
   @UseInterceptors(JwtSignedInterceptor)
   @Post('sign-up')
   signUp(@Body() signUpDto: SignUpDto) {
@@ -40,7 +48,11 @@ export class AuthenticationController {
   }
 
   @ApiOperation({ description: '获取非对称公钥' })
-  @ApiUnifiedResponse({ type: 'string', description: '非对称公钥' })
+  @ApiUnifiedResponse({
+    type: 'string',
+    description: '非对称公钥',
+    default: 'public-key',
+  })
   @Get('public-key')
   getPublicKey() {
     return this.authenticationService.getPublicKey();

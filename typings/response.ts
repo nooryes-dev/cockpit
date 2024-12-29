@@ -8,6 +8,7 @@ export enum StatusCode {
 export class SucceedResponse<T> {
   @ApiProperty({
     description: '成功响应：200',
+    default: '200',
   })
   statusCode: StatusCode.Success;
 
@@ -20,11 +21,13 @@ export class SucceedResponse<T> {
 export class FailedResponse {
   @ApiProperty({
     description: '失败响应：500',
+    default: '500',
   })
   statusCode: StatusCode.Fail;
 
   @ApiProperty({
     description: '响应信息',
+    default: '系统繁忙，请稍后再试！',
   })
   message: string;
 }

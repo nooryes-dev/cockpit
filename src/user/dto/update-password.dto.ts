@@ -1,5 +1,5 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumberString } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 @ApiSchema({ description: '修改密码' })
 export class UpdatePasswordDto {
@@ -11,9 +11,9 @@ export class UpdatePasswordDto {
   password: string;
 
   @ApiProperty({
-    description: '验证码',
+    description: '新密码',
     required: true,
   })
-  @IsNumberString()
-  captcha: string;
+  @IsNotEmpty()
+  newPassword: string;
 }
