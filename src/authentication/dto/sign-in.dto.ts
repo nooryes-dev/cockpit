@@ -10,7 +10,7 @@ export class SignInDto {
   username: string;
 
   @ApiProperty({
-    description: '密码（经过私钥加密）',
+    description: '密码（经过公钥加密）',
   })
   password: string;
 }

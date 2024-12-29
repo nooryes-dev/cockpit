@@ -39,8 +39,8 @@ export class AuthenticationController {
     return this.authenticationService.signUp(signUpDto);
   }
 
-  @ApiOperation({ description: '获取非对称私钥' })
-  @ApiUnifiedResponse({ type: 'string', description: '非对称私钥' })
+  @ApiOperation({ description: '获取非对称公钥' })
+  @ApiUnifiedResponse({ type: 'string', description: '非对称公钥' })
   @Get('public-key')
   getPublicKey() {
     return this.authenticationService.getPublicKey();
