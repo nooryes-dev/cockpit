@@ -102,4 +102,17 @@ export class UserService {
       return encoding;
     }
   }
+
+  /**
+   * @description 根据 id 获取用户
+   */
+  async getUserById(id: number) {
+    const _user = await this.userRepository.findOneBy({ id });
+
+    if (!_user) {
+      throw new Error('当前用户信息失效！');
+    }
+
+    return _user;
+  }
 }

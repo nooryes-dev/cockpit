@@ -3,11 +3,14 @@ import { _Preset } from './_preset.entity';
 import { hashSync } from 'bcrypt';
 import { BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
+@ApiSchema({ description: '用户' })
 @Entity({
   name: 'user',
 })
 export class User extends _Preset {
+  @ApiProperty({ description: '用户名' })
   @Column({
     name: 'username',
     type: 'varchar',
@@ -16,6 +19,7 @@ export class User extends _Preset {
   })
   username: string;
 
+  @ApiProperty({ description: '头像', type: String })
   @Column({
     name: 'avatar',
     type: 'varchar',

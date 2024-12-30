@@ -1,3 +1,4 @@
+import { Type } from '@nestjs/common';
 import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import {
   ReferenceObject,
@@ -5,7 +6,9 @@ import {
 } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { FailedResponse, SucceedResponse } from 'typings/response';
 
-export const ApiUnifiedResponse = (ref: SchemaObject | ReferenceObject) =>
+export const ApiUnifiedResponse = (
+  ref: SchemaObject | ReferenceObject | Type,
+) =>
   ApiResponse({
     schema: {
       oneOf: [
@@ -14,7 +17,10 @@ export const ApiUnifiedResponse = (ref: SchemaObject | ReferenceObject) =>
             { $ref: getSchemaPath(SucceedResponse) },
             {
               properties: {
-                data: ref,
+                data:
+                  typeof ref === 'function'
+                    ? { $ref: getSchemaPath(ref) }
+                    : ref,
               },
             },
           ],
