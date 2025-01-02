@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@/libs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@/libs/passport';
 import { DatabaseModule } from '@/libs/database';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -28,6 +29,8 @@ import { DatabaseModule } from '@/libs/database';
     UserModule,
     // 认证模块
     AuthenticationModule,
+    // 分类模块
+    CategoryModule,
   ],
 })
 export class AppModule {}
