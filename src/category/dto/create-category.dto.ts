@@ -1,5 +1,13 @@
 import { Category } from '@/libs/database';
-import { ApiSchema, PickType } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema, PickType } from '@nestjs/swagger';
 
 @ApiSchema({ description: '创建分类' })
-export class CreateCategoryDto extends PickType(Category, ['name', 'logo']) {}
+export class CreateCategoryDto extends PickType(Category, ['name']) {
+  @ApiProperty({
+    description: '分类图标',
+    type: String,
+    nullable: true,
+    required: false,
+  })
+  logo?: string | null;
+}

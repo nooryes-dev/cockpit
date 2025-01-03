@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { User } from './user.entity';
 
 @ApiSchema({ description: '分类' })
 @Entity({
@@ -17,8 +18,42 @@ export class Category extends _Preset {
   @ApiProperty({ description: '分类图标', type: String, nullable: true })
   @Column({
     type: 'varchar',
-    length: 255,
+    length: 128,
     nullable: true,
   })
   logo: string | null;
+
+  @ApiProperty({ description: '创建人id', type: Number })
+  @Column({
+    name: 'created_by_id',
+  })
+  createdById: number;
+
+  @ApiProperty({ description: '创建人', type: Number })
+  @OneToOne(() => User)
+  @JoinColumn({
+    name: 'created_by',
+    referencedColumnName: 'created_by_id',
+  })
+  createdBy: User;
+
+  @ApiProperty({ description: '更新人id', type: Number })
+  @Column({
+    name: 'updated_by_id',
+  })
+  updatedById: number;
+
+  @ApiProperty({ description: '更新人', type: Number })
+  @OneToOne(() => User)
+  @JoinColumn({
+    name: 'updated_by',
+    referencedColumnName: 'updated_by_id',
+  })
+  updatedBy: User;
+
+  @BeforeInsert()
+  private syncUpdatedBy() {
+    if (!!this.updatedById) return;
+    this.updatedById = this.createdById;
+  }
 }

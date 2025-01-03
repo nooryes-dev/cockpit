@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { CatchEverythingFilter } from './filters/catch-everything/catch-everything.filter';
 import { UnifiedResponseInterceptor } from './interceptors/unified-response/unified-response.interceptor';
-import { FailedResponse, SucceedResponse } from 'typings/response';
+import { FailedResponse, Paginated, SucceedResponse } from 'typings/response';
 
 enum Token {
   GlobalPrefix = 'api',
@@ -24,7 +24,7 @@ async function bootstrap() {
 
   SwaggerModule.setup(Token.DocumentPath, app, () =>
     SwaggerModule.createDocument(app, config, {
-      extraModels: [SucceedResponse, FailedResponse],
+      extraModels: [SucceedResponse, FailedResponse, Paginated],
     }),
   );
 
