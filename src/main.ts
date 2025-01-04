@@ -10,6 +10,7 @@ import { Paginated } from 'typings/pagination.types';
 enum Token {
   GlobalPrefix = 'api',
   DocumentPath = 'swagger',
+  Port = 3900,
 }
 
 async function bootstrap() {
@@ -44,8 +45,11 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new CatchEverythingFilter(httpAdapter));
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(Token.Port);
 
-  console.info('接口文档地址：', `http://localhost:3000/${Token.DocumentPath}`);
+  console.info(
+    '接口文档地址：',
+    `http://localhost:${Token.Port}/${Token.DocumentPath}`,
+  );
 }
 bootstrap();
