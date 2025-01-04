@@ -29,8 +29,8 @@ export class PaginatedResponseInterceptor<T = unknown>
         return {
           items,
           total,
-          page: query.page || 1,
-          pageSize: query.pageSize || 10,
+          page: +(query.page || 1),
+          pageSize: +(query.pageSize || 10),
         };
       }),
     );

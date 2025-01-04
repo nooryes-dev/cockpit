@@ -51,7 +51,7 @@ export class CategoryController {
 
   @ApiBearerAuth()
   @ApiOperation({ summary: '更新分类' })
-  @ApiUnifiedResponse(Boolean)
+  @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
@@ -64,7 +64,7 @@ export class CategoryController {
 
   @ApiBearerAuth()
   @ApiOperation({ summary: '删除分类' })
-  @ApiUnifiedResponse(Boolean)
+  @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(

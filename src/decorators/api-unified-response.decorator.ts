@@ -8,8 +8,8 @@ import { FailedResponse, SucceedResponse } from 'typings/response.types';
 
 export const ApiUnifiedResponse = (
   ref: SchemaObject | ReferenceObject | Type,
-) =>
-  ApiResponse({
+) => {
+  return ApiResponse({
     schema: {
       oneOf: [
         {
@@ -33,3 +33,4 @@ export const ApiUnifiedResponse = (
       ],
     },
   });
+};

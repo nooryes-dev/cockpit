@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -29,7 +29,7 @@ export class Category extends _Preset {
   })
   createdById: number;
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn({
     name: 'created_by_id',
     referencedColumnName: 'id',
@@ -42,7 +42,7 @@ export class Category extends _Preset {
   })
   updatedById: number;
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn({
     name: 'updated_by_id',
     referencedColumnName: 'id',

@@ -36,7 +36,7 @@ export class CategoryService {
     updatedById: number,
   ) {
     return (
-      (
+      ((
         await this.categoryRepository.update(
           id,
           this.categoryRepository.create({
@@ -44,7 +44,7 @@ export class CategoryService {
             updatedById,
           }),
         )
-      ).affected ?? 0 > 0
+      ).affected ?? 0) > 0
     );
   }
 
