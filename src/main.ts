@@ -12,7 +12,9 @@ enum Token {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+  });
 
   // 生成 swagger 文档
   const config = new DocumentBuilder()
