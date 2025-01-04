@@ -29,7 +29,6 @@ export class Category extends _Preset {
   })
   createdById: number;
 
-  @ApiProperty({ description: '创建人', type: Number })
   @OneToOne(() => User)
   @JoinColumn({
     name: 'created_by_id',
@@ -43,7 +42,6 @@ export class Category extends _Preset {
   })
   updatedById: number;
 
-  @ApiProperty({ description: '更新人', type: Number })
   @OneToOne(() => User)
   @JoinColumn({
     name: 'updated_by_id',

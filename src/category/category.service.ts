@@ -16,13 +16,15 @@ export class CategoryService {
   /**
    * @description 创建分类
    */
-  create(createCategoryDto: CreateCategoryDto, createdById: number) {
-    return this.categoryRepository.save(
-      this.categoryRepository.create({
-        ...createCategoryDto,
-        createdById,
-      }),
-    );
+  async create(createCategoryDto: CreateCategoryDto, createdById: number) {
+    return (
+      await this.categoryRepository.save(
+        this.categoryRepository.create({
+          ...createCategoryDto,
+          createdById,
+        }),
+      )
+    ).id;
   }
 
   /**

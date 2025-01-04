@@ -18,7 +18,7 @@ export class JwtSignedInterceptor implements NestInterceptor {
   ): Observable<string> {
     return next.handle().pipe(
       map((user) => {
-        return this.jwtService.sign({ id: user.id });
+        return `Bearer ${this.jwtService.sign({ id: user.id })}`;
       }),
     );
   }

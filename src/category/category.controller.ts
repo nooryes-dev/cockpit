@@ -19,7 +19,6 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiTags,
-  getSchemaPath,
 } from '@nestjs/swagger';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { Category, User } from '@/libs/database';
@@ -38,8 +37,8 @@ export class CategoryController {
   @ApiBearerAuth()
   @ApiOperation({ summary: '创建分类' })
   @ApiUnifiedResponse({
-    $ref: getSchemaPath(Category),
-    description: '创建的分类',
+    type: 'number',
+    description: '分类id',
   })
   @UseGuards(JwtAuthGuard)
   @Post()
