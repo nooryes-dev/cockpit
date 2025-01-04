@@ -4,7 +4,8 @@ import {
   ReferenceObject,
   SchemaObject,
 } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { FailedResponse, Paginated, SucceedResponse } from 'typings/response';
+import { Paginated } from 'typings/pagination.types';
+import { FailedResponse, SucceedResponse } from 'typings/response.types';
 
 export const ApiUnifiedPaginatedResponse = (
   ref: SchemaObject | ReferenceObject | Type,

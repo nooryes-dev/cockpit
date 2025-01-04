@@ -7,6 +7,9 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Get,
+  Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -22,6 +25,9 @@ import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { Category, User } from '@/libs/database';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
+import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
+import { Pagination } from 'typings/pagination.types';
+import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 
 @ApiTags('分类')
 @ApiExtraModels(Category)
@@ -67,5 +73,20 @@ export class CategoryController {
     @WhoAmI() { id: deletedById }: User,
   ) {
     return this.categoryService.remove(id, deletedById);
+  }
+
+  @ApiOperation({ summary: '获取分类列表' })
+  @ApiUnifiedPaginatedResponse(Category)
+  @UseInterceptors(PaginatedResponseInterceptor)
+  @Get('list')
+  categories(@Query() pagination: Pagination) {
+    return this.categoryService.categories(pagination);
+  }
+
+  @ApiOperation({ summary: '获取分类详情' })
+  @ApiUnifiedResponse(Category)
+  @Get(':id')
+  category(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.category(id);
   }
 }

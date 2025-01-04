@@ -13,7 +13,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { User } from '@/libs/database';
-import { JwtSignedInterceptor } from 'src/interceptors/jwt-signed/jwt-signed.interceptor';
+import { JwtSignedInterceptor } from 'src/interceptors/jwt-signed.interceptor';
 import { SignUpDto } from './dto/sign-up.dto';
 
 @ApiTags('认证')

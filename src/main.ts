@@ -3,8 +3,9 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { CatchEverythingFilter } from './filters/catch-everything/catch-everything.filter';
-import { UnifiedResponseInterceptor } from './interceptors/unified-response/unified-response.interceptor';
-import { FailedResponse, Paginated, SucceedResponse } from 'typings/response';
+import { UnifiedResponseInterceptor } from './interceptors/unified-response.interceptor';
+import { FailedResponse, SucceedResponse } from 'typings/response.types';
+import { Paginated } from 'typings/pagination.types';
 
 enum Token {
   GlobalPrefix = 'api',

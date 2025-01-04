@@ -4,7 +4,7 @@ import {
   ReferenceObject,
   SchemaObject,
 } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { FailedResponse, SucceedResponse } from 'typings/response';
+import { FailedResponse, SucceedResponse } from 'typings/response.types';
 
 export const ApiUnifiedResponse = (
   ref: SchemaObject | ReferenceObject | Type,

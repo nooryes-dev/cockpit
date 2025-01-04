@@ -6,7 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AbstractHttpAdapter } from '@nestjs/core';
-import { StatusCode, UnifiedResponse } from 'typings/response';
+import { StatusCode, UnifiedResponse } from 'typings/response.types';
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {

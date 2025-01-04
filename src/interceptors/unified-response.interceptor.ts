@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { StatusCode, UnifiedResponse } from 'typings/response';
+import { StatusCode, UnifiedResponse } from 'typings/response.types';
 
 @Injectable()
 export class UnifiedResponseInterceptor implements NestInterceptor {
