@@ -3,10 +3,14 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Repository } from 'typeorm';
 import { Category } from '@/libs/database';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly categoryRepository: Repository<Category>) {}
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ) {}
 
   /**
    * @description 创建分类
