@@ -10,7 +10,7 @@ import {
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { User } from '@/libs/database';
-import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @ApiTags('用户')
 @ApiExtraModels(User)

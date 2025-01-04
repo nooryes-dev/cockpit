@@ -23,7 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { Category, User } from '@/libs/database';
-import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
 import { Pagination } from 'typings/pagination.types';
