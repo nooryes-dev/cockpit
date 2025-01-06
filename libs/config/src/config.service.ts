@@ -37,4 +37,27 @@ export class ConfigService {
   get rsaPublicKey() {
     return this.#get(NameSpaceToken.Rsa, PropertyToken.PublicKey);
   }
+
+  /**
+   * @description 阿里云 oss 访问密钥 id
+   */
+  get aliyunOssAccessKeyId() {
+    return this.#get(NameSpaceToken.Aliyun, PropertyToken.OssAccessKeyId) ?? '';
+  }
+
+  /**
+   * @description 阿里云 oss 访问密钥 secret
+   */
+  get aliyunOssAccessKeySecret() {
+    return (
+      this.#get(NameSpaceToken.Aliyun, PropertyToken.OssAccessKeySecret) ?? ''
+    );
+  }
+
+  /**
+   * @description 阿里云 oss 角色 arn
+   */
+  get aliyunOssRoleArn() {
+    return this.#get(NameSpaceToken.Aliyun, PropertyToken.OssRoleArn) ?? '';
+  }
 }

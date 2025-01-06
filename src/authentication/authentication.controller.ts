@@ -7,7 +7,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiExtraModels,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { SignInDto } from './dto/sign-in.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,8 +21,11 @@ import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { User } from '@/libs/database';
 import { JwtSignedInterceptor } from 'src/interceptors/jwt-signed.interceptor';
 import { SignUpDto } from './dto/sign-up.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { OssStsResponse } from './dto/oss-sts.dto';
 
 @ApiTags('认证')
+@ApiExtraModels(OssStsResponse)
 @Controller('authentication')
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
@@ -56,5 +65,14 @@ export class AuthenticationController {
   @Get('public-key')
   getPublicKey() {
     return this.authenticationService.getPublicKey();
+  }
+
+  @ApiOperation({ description: '获取 OSS 临时凭证' })
+  @ApiBearerAuth()
+  @ApiUnifiedResponse(OssStsResponse)
+  @UseGuards(JwtAuthGuard)
+  @Get('oss-sts')
+  getOssSts() {
+    return this.authenticationService.getOssSts();
   }
 }
