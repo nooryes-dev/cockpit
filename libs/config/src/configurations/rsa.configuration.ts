@@ -11,7 +11,7 @@ export default registerAs(NameSpaceToken.Rsa, () => {
       format: 'pem',
     },
     privateKeyEncoding: {
-      type: 'pkcs1',
+      type: 'pkcs8',
       format: 'pem',
     },
   });

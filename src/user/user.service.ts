@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { SignUpDto } from 'src/authentication/dto/sign-up.dto';
 import { compare } from 'bcrypt';
 import { ConfigService } from '@/libs/config';
-import { constants, privateDecrypt } from 'crypto';
+import { privateDecrypt } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -64,7 +64,9 @@ export class UserService {
     }
 
     // 比较当前密码
-    if (!(await compare(password, _user.password))) {
+    if (
+      !(await compare(this.decryptByRsaPrivateKey(password), _user.password))
+    ) {
       throw new Error('密码不正确！');
     }
 
@@ -86,20 +88,20 @@ export class UserService {
   /**
    * @description 利用RSA私钥解密前端传输过来的密文密码
    */
-  decryptByRsaPrivateKey(encoding: string): string {
+  decryptByRsaPrivateKey(encrypt: string): string {
     const privateKey = this.configService.rsaPrivateKey;
 
     if (!privateKey) {
-      return encoding;
+      return encrypt;
     }
 
     try {
       return privateDecrypt(
-        { key: privateKey, padding: constants.RSA_PKCS1_PADDING },
-        Buffer.from(encoding, 'base64'),
+        { key: privateKey },
+        Buffer.from(encrypt, 'base64'),
       ).toString();
     } catch {
-      return encoding;
+      return encrypt;
     }
   }
 
