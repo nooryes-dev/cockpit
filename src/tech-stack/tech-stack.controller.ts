@@ -12,7 +12,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { TechStackService } from './tech-stack.service';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { CreateTechStackDto } from './dto/create-tech-stack.dto';
@@ -23,6 +28,8 @@ import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginate
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 import { Pagination } from 'typings/pagination.types';
 
+@ApiTags('技术栈')
+@ApiExtraModels(TechStack)
 @Controller('tech-stack')
 export class TechStackController {
   constructor(private readonly techStackService: TechStackService) {}
