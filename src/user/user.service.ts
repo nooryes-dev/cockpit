@@ -97,7 +97,7 @@ export class UserService {
 
     try {
       return privateDecrypt(
-        { key: privateKey },
+        privateKey,
         Buffer.from(encrypt, 'base64'),
       ).toString();
     } catch {
