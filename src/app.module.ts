@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@/libs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@/libs/passport';
 import { DatabaseModule } from '@/libs/database';
+import { TechStackModule } from './tech-stack/tech-stack.module';
 import { CategoryModule } from './category/category.module';
 
 @Module({
@@ -29,6 +30,8 @@ import { CategoryModule } from './category/category.module';
     UserModule,
     // 认证模块
     AuthenticationModule,
+    // 技术栈
+    TechStackModule,
     // 分类模块
     CategoryModule,
   ],

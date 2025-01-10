@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@/libs/config';
 import { User } from './entities/user.entity';
+import { TechStack } from './entities/tech-stack.entity';
 import { Category } from './entities/category.entity';
 
 @Module({
@@ -15,7 +16,7 @@ import { Category } from './entities/category.entity';
           port: 3306,
           username: 'root',
           database: configService.appCode,
-          entities: [User, Category],
+          entities: [User, TechStack, Category],
           synchronize: true,
         };
       },
