@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Category } from '@/libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
@@ -73,16 +73,20 @@ export class CategoryService {
     pageSize = 10,
     techStackCodes = [],
   }: QueryCategoriesDto) {
-    return this.categoryRepository
-      .createQueryBuilder()
-      .where({
-        ...(techStackCodes.length > 0 && {
-          techStackCode: In(techStackCodes),
-        }),
-      })
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
+    const qb = this.categoryRepository
+      .createQueryBuilder('category')
+      .select()
+      .orderBy('id')
+      .offset((page - 1) * pageSize)
+      .limit(pageSize);
+
+    if (techStackCodes.length > 0) {
+      qb.andWhere('category.techStackCode IN (:...techStackCodes)', {
+        techStackCodes: techStackCodes,
+      });
+    }
+
+    return qb.getManyAndCount();
   }
 
   /**

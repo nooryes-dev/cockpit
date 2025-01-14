@@ -5,9 +5,9 @@ import { Pagination } from 'typings/pagination.types';
 export class QueryCategoriesDto extends Pagination {
   @ApiProperty({
     description: '技术栈codes',
-    nullable: true,
-    type: String,
+    required: false,
     isArray: true,
+    type: 'string',
   })
   techStackCodes?: string[];
 }

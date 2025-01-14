@@ -10,6 +10,7 @@ import {
   Get,
   Query,
   UseInterceptors,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -78,8 +79,15 @@ export class CategoryController {
   @ApiUnifiedPaginatedResponse(Category)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('list')
-  categories(@Query() queryCategoriesDto: QueryCategoriesDto) {
-    return this.categoryService.categories(queryCategoriesDto);
+  categories(
+    @Query() queryCategoriesDto: QueryCategoriesDto,
+    @Query('techStackCodes', new ParseArrayPipe({ optional: true }))
+    techStackCodes: QueryCategoriesDto['techStackCodes'],
+  ) {
+    return this.categoryService.categories({
+      ...queryCategoriesDto,
+      techStackCodes,
+    });
   }
 
   @ApiOperation({ summary: '获取分类详情' })
