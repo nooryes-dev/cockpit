@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Category } from '@/libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pagination } from 'typings/pagination.types';
+import { QueryCategoriesDto } from './dto/query-categories.dto';
 
 @Injectable()
 export class CategoryService {
@@ -68,9 +68,18 @@ export class CategoryService {
   /**
    * @description 分页获取分类列表
    */
-  categories({ page = 1, pageSize = 10 }: Pagination) {
+  categories({
+    page = 1,
+    pageSize = 10,
+    techStackCodes = [],
+  }: QueryCategoriesDto) {
     return this.categoryRepository
       .createQueryBuilder()
+      .where({
+        ...(techStackCodes.length > 0 && {
+          techStackCode: In(techStackCodes),
+        }),
+      })
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();

@@ -1,8 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
-/**
- * @description 分页请求格式
- */
+@ApiSchema({ description: '分页请求格式' })
 export class Pagination {
   @ApiProperty({
     description: '当前页',
@@ -19,9 +17,7 @@ export class Pagination {
   pageSize: number;
 }
 
-/**
- * @description 分页响应格式
- */
+@ApiSchema({ description: '分页响应格式' })
 export class Paginated<T> {
   @ApiProperty({
     description: '总数',

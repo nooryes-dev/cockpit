@@ -2,12 +2,21 @@ import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
+import { TechStack } from './tech-stack.entity';
 
 @ApiSchema({ description: '分类' })
 @Entity({
   name: 'category',
 })
 export class Category extends _Preset {
+  @ApiProperty({ description: '分类code' })
+  @Column({
+    type: 'varchar',
+    length: 20,
+    unique: true,
+  })
+  code: string;
+
   @ApiProperty({ description: '分类名称' })
   @Column({
     type: 'varchar',
@@ -48,6 +57,19 @@ export class Category extends _Preset {
     referencedColumnName: 'id',
   })
   updatedBy: User;
+
+  @ApiProperty({ description: '技术栈code', type: String })
+  @Column({
+    name: 'tech_stack_code',
+  })
+  techStackCode: number;
+
+  @ManyToOne(() => TechStack)
+  @JoinColumn({
+    name: 'tech_stack_code',
+    referencedColumnName: 'code',
+  })
+  techStack: TechStack;
 
   @BeforeInsert()
   private syncUpdatedBy() {

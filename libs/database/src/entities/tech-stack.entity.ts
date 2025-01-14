@@ -8,6 +8,14 @@ import { User } from './user.entity';
   name: 'tech-stack',
 })
 export class TechStack extends _Preset {
+  @ApiProperty({ description: '技术栈code' })
+  @Column({
+    type: 'varchar',
+    length: 20,
+    unique: true,
+  })
+  code: string;
+
   @ApiProperty({ description: '名称' })
   @Column({
     type: 'varchar',

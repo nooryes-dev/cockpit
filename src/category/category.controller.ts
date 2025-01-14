@@ -25,8 +25,8 @@ import { Category, User } from '@/libs/database';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
-import { Pagination } from 'typings/pagination.types';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
+import { QueryCategoriesDto } from './dto/query-categories.dto';
 
 @ApiTags('分类')
 @ApiExtraModels(Category)
@@ -78,8 +78,8 @@ export class CategoryController {
   @ApiUnifiedPaginatedResponse(Category)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('list')
-  categories(@Query() pagination: Pagination) {
-    return this.categoryService.categories(pagination);
+  categories(@Query() queryCategoriesDto: QueryCategoriesDto) {
+    return this.categoryService.categories(queryCategoriesDto);
   }
 
   @ApiOperation({ summary: '获取分类详情' })
