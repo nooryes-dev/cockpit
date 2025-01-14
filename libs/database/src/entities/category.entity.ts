@@ -24,7 +24,11 @@ export class Category extends _Preset {
   })
   name: string;
 
-  @ApiProperty({ description: '分类图标', type: String, nullable: true })
+  @ApiProperty({
+    description: '分类图标',
+    type: String,
+    nullable: true,
+  })
   @Column({
     type: 'varchar',
     length: 128,
