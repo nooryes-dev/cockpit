@@ -2,8 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export enum StatusCode {
   Success = '200',
+  Unauthorized = '401',
   Fail = '500',
 }
+
+export type UnsuccessStatusCode = Exclude<StatusCode, StatusCode.Success>;
 
 export class SucceedResponse<T> {
   @ApiProperty({
@@ -23,7 +26,7 @@ export class FailedResponse {
     description: '失败响应：500',
     default: '500',
   })
-  statusCode: StatusCode.Fail;
+  statusCode: UnsuccessStatusCode;
 
   @ApiProperty({
     description: '响应信息',
