@@ -75,4 +75,13 @@ export class AuthenticationController {
   getOssSts() {
     return this.authenticationService.getOssSts();
   }
+
+  @ApiOperation({ description: '验证 jwt 是否有效' })
+  @ApiBearerAuth()
+  @ApiUnifiedResponse({ type: 'boolean', description: 'jwt 是否有效' })
+  @UseGuards(new JwtAuthGuard(false))
+  @Get('is-jwt-valid')
+  isJwtValid(@WhoAmI() user: User) {
+    return !!user;
+  }
 }
