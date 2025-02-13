@@ -5,12 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TechStack } from '@/libs/database';
 import { Repository } from 'typeorm';
 import { Pagination } from 'typings/pagination.types';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class TechStackService {
   constructor(
     @InjectRepository(TechStack)
     private readonly techStackRepository: Repository<TechStack>,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -68,12 +70,20 @@ export class TechStackService {
   /**
    * @description 分页获取技术栈列表
    */
-  techStacks({ page = 1, pageSize = 10 }: Pagination) {
-    return this.techStackRepository
+  async techStacks({ page = 1, pageSize = 10 }: Pagination) {
+    const [_techStacks, count] = await this.techStackRepository
       .createQueryBuilder()
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
+
+    return [
+      await this.userService.getUsersByIds(_techStacks, {
+        createdById: 'createdBy',
+        updatedById: 'updatedBy',
+      }),
+      count,
+    ];
   }
 
   /**

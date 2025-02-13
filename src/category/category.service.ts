@@ -5,12 +5,14 @@ import { Repository } from 'typeorm';
 import { Category } from '@/libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -68,7 +70,7 @@ export class CategoryService {
   /**
    * @description 分页获取分类列表
    */
-  categories({
+  async categories({
     page = 1,
     pageSize = 10,
     techStackCodes = [],
@@ -86,7 +88,14 @@ export class CategoryService {
       });
     }
 
-    return qb.getManyAndCount();
+    const [_categories, count] = await qb.getManyAndCount();
+    return [
+      await this.userService.getUsersByIds(_categories, {
+        createdById: 'createdBy',
+        updatedById: 'updatedBy',
+      }),
+      count,
+    ];
   }
 
   /**
