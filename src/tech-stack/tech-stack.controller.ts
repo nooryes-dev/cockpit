@@ -26,7 +26,7 @@ import { TechStack, User } from '@/libs/database';
 import { UpdateTechStackDto } from './dto/update-tech-stack.dto';
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
-import { Pagination } from 'typings/pagination.types';
+import { QueryTechStacksDto } from './dto/query-tech-stacks.dto';
 
 @ApiTags('技术栈')
 @ApiExtraModels(TechStack)
@@ -78,8 +78,8 @@ export class TechStackController {
   @ApiUnifiedPaginatedResponse(TechStack)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('list')
-  techStacks(@Query() pagination: Pagination) {
-    return this.techStackService.techStacks(pagination);
+  techStacks(@Query() params: QueryTechStacksDto) {
+    return this.techStackService.techStacks(params);
   }
 
   @ApiOperation({ summary: '获取技术栈详情' })

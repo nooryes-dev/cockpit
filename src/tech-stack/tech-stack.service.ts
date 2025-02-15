@@ -4,8 +4,8 @@ import { UpdateTechStackDto } from './dto/update-tech-stack.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TechStack } from '@/libs/database';
 import { Repository } from 'typeorm';
-import { Pagination } from 'typings/pagination.types';
 import { UserService } from 'src/user/user.service';
+import { QueryTechStacksDto } from './dto/query-tech-stacks.dto';
 
 @Injectable()
 export class TechStackService {
@@ -70,9 +70,22 @@ export class TechStackService {
   /**
    * @description 分页获取技术栈列表
    */
-  async techStacks({ page = 1, pageSize = 10 }: Pagination) {
-    const [_techStacks, count] = await this.techStackRepository
-      .createQueryBuilder()
+  async techStacks({
+    page = 1,
+    pageSize = 10,
+    code,
+    name,
+  }: QueryTechStacksDto) {
+    const qb = this.techStackRepository.createQueryBuilder('techStack');
+
+    if (!!code) {
+      qb.where('techStack.code REGEXP :code', { code });
+    }
+    if (!!name) {
+      qb.orWhere('techStack.name REGEXP :name', { name });
+    }
+
+    const [_techStacks, count] = await qb
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
