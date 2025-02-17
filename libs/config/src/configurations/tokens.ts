@@ -15,4 +15,7 @@ export enum PropertyToken {
   OssAccessKeySecret = 'oss-access-key-secret',
   OssRoleArn = 'oss-role-arn',
   Admins = 'admins',
+
+  ConsumerEnd = 'consumer-end',
+  BusinessEnd = 'business-end',
 }

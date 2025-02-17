@@ -58,7 +58,7 @@ export class AuthenticationService {
   async signIn({ to }: SignInDto, id: number) {
     const _user = await this.userService.getUserById(id);
     if (!_user) return { id };
-    if (to !== 'admin') return _user;
+    if (to !== this.configService.getAppBusinessEndEnd) return _user;
 
     const isAdmin = this.configService.admins.has(_user.username);
     if (!isAdmin) {

@@ -70,4 +70,11 @@ export class ConfigService {
       this.#get<string[]>(NameSpaceToken.Authorization, PropertyToken.Admins),
     );
   }
+
+  /**
+   * @description 获取管理端应用code
+   */
+  get getAppBusinessEndEnd() {
+    return this.#get(NameSpaceToken.App, PropertyToken.BusinessEnd);
+  }
 }
