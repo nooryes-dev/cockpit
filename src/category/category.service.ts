@@ -6,6 +6,10 @@ import { Category, TechStack } from '@/libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
 import { UserService } from 'src/user/user.service';
+import {
+  SearchCategoriesDto,
+  SearchedCategoriesDto,
+} from './dto/search-categories.dto';
 
 @Injectable()
 export class CategoryService {
@@ -110,5 +114,24 @@ export class CategoryService {
         updatedBy: true,
       },
     });
+  }
+
+  /**
+   * @description 搜索分类列表
+   */
+  async searchCategories({ keyword }: SearchCategoriesDto) {
+    const qb = this.categoryRepository
+      .createQueryBuilder('category')
+      .select('category.code', 'code')
+      .addSelect('category.name', 'name');
+
+    if (!!keyword) {
+      qb.where('category.code REGEXP :keyword', { keyword }).orWhere(
+        'category.name REGEXP :keyword',
+        { keyword },
+      );
+    }
+
+    return await qb.skip(0).take(50).getRawMany<SearchedCategoriesDto>();
   }
 }
