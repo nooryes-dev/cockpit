@@ -6,6 +6,10 @@ import { TechStack } from '@/libs/database';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { QueryTechStacksDto } from './dto/query-tech-stacks.dto';
+import {
+  SearchedTechStackDto,
+  SearchTechStacksDto,
+} from './dto/search-tech-stacks.dto';
 
 @Injectable()
 export class TechStackService {
@@ -103,6 +107,31 @@ export class TechStackService {
    * @description 获取技术栈详情
    */
   techStack(id: number) {
-    return this.techStackRepository.findOneBy({ id });
+    return this.techStackRepository.findOne({
+      where: { id },
+      relations: {
+        createdBy: true,
+        updatedBy: true,
+      },
+    });
+  }
+
+  /**
+   * @description 搜索技术栈列表
+   */
+  async searchTechStacks({ keyword }: SearchTechStacksDto) {
+    const qb = this.techStackRepository
+      .createQueryBuilder('techStack')
+      .select('techStack.code', 'code')
+      .addSelect('techStack.name', 'name');
+
+    if (!!keyword) {
+      qb.where('techStack.code REGEXP :keyword', { keyword }).orWhere(
+        'techStack.name REGEXP :keyword',
+        { keyword },
+      );
+    }
+
+    return await qb.skip(0).take(50).getRawMany<SearchedTechStackDto>();
   }
 }

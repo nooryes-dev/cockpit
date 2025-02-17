@@ -5,12 +5,13 @@ import jwt from './configurations/jwt.configuration';
 import app from './configurations/app.configuration';
 import rsa from './configurations/rsa.configuration';
 import aliyun from './configurations/aliyun.configuration';
+import authorization from './configurations/authorization.configuration';
 
 @Global()
 @Module({
   imports: [
     _ConfigModule.forRoot({
-      load: [jwt, app, rsa, aliyun],
+      load: [jwt, app, rsa, aliyun, authorization],
     }),
   ],
   providers: [ConfigService],

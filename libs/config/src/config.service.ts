@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService as _ConfigService } from '@nestjs/config';
 import { NameSpaceToken, PropertyToken } from './configurations/tokens';
+import { Partialable } from '@aiszlab/relax/types';
 
 @Injectable()
 export class ConfigService {
   constructor(private readonly configService: _ConfigService) {}
 
-  #get(namespace: NameSpaceToken, property: PropertyToken) {
-    return this.configService.get<string>(`${namespace}.${property}`);
+  #get<T = string>(namespace: NameSpaceToken, property: PropertyToken) {
+    return this.configService.get<Partialable<T>>(`${namespace}.${property}`);
   }
 
   /**
@@ -59,5 +60,14 @@ export class ConfigService {
    */
   get aliyunOssRoleArn() {
     return this.#get(NameSpaceToken.Aliyun, PropertyToken.OssRoleArn) ?? '';
+  }
+
+  /**
+   * @description 获取管理员列表
+   */
+  get admins() {
+    return new Set(
+      this.#get<string[]>(NameSpaceToken.Authorization, PropertyToken.Admins),
+    );
   }
 }

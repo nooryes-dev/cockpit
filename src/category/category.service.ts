@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Repository } from 'typeorm';
-import { Category } from '@/libs/database';
+import { Category, TechStack } from '@/libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
 import { UserService } from 'src/user/user.service';
@@ -77,13 +77,13 @@ export class CategoryService {
   }: QueryCategoriesDto) {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
-      .select()
-      .orderBy('id')
+      .leftJoinAndMapOne('category.techStack', TechStack, 'techStack')
+      .orderBy('category.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 
     if (techStackCodes.length > 0) {
-      qb.andWhere('category.techStackCode IN (:...techStackCodes)', {
+      qb.where('category.techStackCode IN (:...techStackCodes)', {
         techStackCodes: techStackCodes,
       });
     }
@@ -102,6 +102,13 @@ export class CategoryService {
    * @description 获取分类详情
    */
   category(id: number) {
-    return this.categoryRepository.findOneBy({ id });
+    return this.categoryRepository.findOne({
+      where: { id },
+      relations: {
+        techStack: true,
+        createdBy: true,
+        updatedBy: true,
+      },
+    });
   }
 }

@@ -1,8 +1,9 @@
 import { ConfigService } from '@/libs/config';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { STS } from 'ali-oss';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -49,5 +50,20 @@ export class AuthenticationService {
     return await this.aliyunOssSts
       .assumeRole(this.configService.aliyunOssRoleArn)
       .then(({ credentials }) => credentials);
+  }
+
+  /**
+   * @description 登录
+   */
+  async signIn({ to }: SignInDto, id: number) {
+    const _user = await this.userService.getUserById(id);
+    if (!_user) return { id };
+    if (to !== 'admin') return _user;
+
+    const isAdmin = this.configService.admins.has(_user.username);
+    if (!isAdmin) {
+      throw new ForbiddenException('您不是管理员，无法登录后台！');
+    }
+    return _user;
   }
 }

@@ -17,6 +17,7 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -27,9 +28,13 @@ import { UpdateTechStackDto } from './dto/update-tech-stack.dto';
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 import { QueryTechStacksDto } from './dto/query-tech-stacks.dto';
+import {
+  SearchedTechStackDto,
+  SearchTechStacksDto,
+} from './dto/search-tech-stacks.dto';
 
 @ApiTags('技术栈')
-@ApiExtraModels(TechStack)
+@ApiExtraModels(TechStack, SearchedTechStackDto)
 @Controller('tech-stack')
 export class TechStackController {
   constructor(private readonly techStackService: TechStackService) {}
@@ -80,6 +85,16 @@ export class TechStackController {
   @Get('list')
   techStacks(@Query() params: QueryTechStacksDto) {
     return this.techStackService.techStacks(params);
+  }
+
+  @ApiOperation({ summary: '搜索技术栈' })
+  @ApiUnifiedResponse({
+    type: 'array',
+    items: { $ref: getSchemaPath(SearchedTechStackDto) },
+  })
+  @Get('search')
+  searchTechStacks(@Query() searchTechStacksDto: SearchTechStacksDto) {
+    return this.techStackService.searchTechStacks(searchTechStacksDto);
   }
 
   @ApiOperation({ summary: '获取技术栈详情' })

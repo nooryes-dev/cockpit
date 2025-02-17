@@ -40,8 +40,8 @@ export class AuthenticationController {
   @UseGuards(AuthGuard('local'))
   @UseInterceptors(JwtSignedInterceptor)
   @Post('sign-in')
-  signIn(@WhoAmI() user: User) {
-    return user;
+  signIn(@WhoAmI() user: User, @Body() signInDto: SignInDto) {
+    return this.authenticationService.signIn(signInDto, user.id);
   }
 
   @ApiOperation({ description: '注册' })

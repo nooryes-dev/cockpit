@@ -3,6 +3,7 @@ export enum NameSpaceToken {
   App = 'app',
   Rsa = 'rsa',
   Aliyun = 'aliyun',
+  Authorization = 'authorization',
 }
 
 export enum PropertyToken {
@@ -13,4 +14,5 @@ export enum PropertyToken {
   OssAccessKeyId = 'oss-access-key-id',
   OssAccessKeySecret = 'oss-access-key-secret',
   OssRoleArn = 'oss-role-arn',
+  Admins = 'admins',
 }
