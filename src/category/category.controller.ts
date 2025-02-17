@@ -20,6 +20,7 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { Category, User } from '@/libs/database';
@@ -28,9 +29,13 @@ import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorato
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
+import {
+  SearchCategoriesDto,
+  SearchedCategoriesDto,
+} from './dto/search-categories.dto';
 
 @ApiTags('分类')
-@ApiExtraModels(Category)
+@ApiExtraModels(Category, SearchedCategoriesDto)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -88,6 +93,16 @@ export class CategoryController {
       ...queryCategoriesDto,
       techStackCodes,
     });
+  }
+
+  @ApiOperation({ summary: '搜索分类' })
+  @ApiUnifiedResponse({
+    type: 'array',
+    items: { $ref: getSchemaPath(SearchedCategoriesDto) },
+  })
+  @Get('search')
+  searchCategoriesDto(@Query() searchCategoriesDto: SearchCategoriesDto) {
+    return this.categoryService.searchCategories(searchCategoriesDto);
   }
 
   @ApiOperation({ summary: '获取分类详情' })

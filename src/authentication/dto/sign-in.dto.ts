@@ -13,4 +13,9 @@ export class SignInDto {
     description: '密码（经过公钥加密）',
   })
   password: string;
+
+  @ApiProperty({
+    description: '登录系统',
+  })
+  to: string;
 }
