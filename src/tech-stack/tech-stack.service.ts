@@ -80,13 +80,16 @@ export class TechStackService {
     code,
     name,
   }: QueryTechStacksDto) {
-    const qb = this.techStackRepository.createQueryBuilder('techStack');
+    const qb = this.techStackRepository
+      .createQueryBuilder('techStack')
+      .where('1 = 1');
 
     if (!!code) {
-      qb.where('techStack.code REGEXP :code', { code });
+      qb.andWhere('techStack.code REGEXP :code', { code });
     }
+
     if (!!name) {
-      qb.orWhere('techStack.name REGEXP :name', { name });
+      qb.andWhere('techStack.name REGEXP :name', { name });
     }
 
     const [_techStacks, count] = await qb

@@ -10,4 +10,18 @@ export class QueryCategoriesDto extends Pagination {
     type: 'string',
   })
   techStackCodes?: string[];
+
+  @ApiProperty({
+    description: '分类code',
+    required: false,
+    type: 'string',
+  })
+  code?: string;
+
+  @ApiProperty({
+    description: '分类name',
+    required: false,
+    type: 'string',
+  })
+  name?: string;
 }

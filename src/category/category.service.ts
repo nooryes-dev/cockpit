@@ -78,18 +78,34 @@ export class CategoryService {
     page = 1,
     pageSize = 10,
     techStackCodes = [],
+    code,
+    name,
   }: QueryCategoriesDto) {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
-      .leftJoinAndMapOne('category.techStack', TechStack, 'techStack')
+      .where('1 = 1')
+      .leftJoinAndMapOne(
+        'category.techStack',
+        TechStack,
+        'techStack',
+        'techStack.code = category.techStackCode',
+      )
       .orderBy('category.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 
     if (techStackCodes.length > 0) {
-      qb.where('category.techStackCode IN (:...techStackCodes)', {
+      qb.andWhere('category.techStackCode IN (:...techStackCodes)', {
         techStackCodes: techStackCodes,
       });
+    }
+
+    if (!!code) {
+      qb.andWhere('category.code REGEXP :code', { code });
+    }
+
+    if (!!name) {
+      qb.andWhere('category.name REGEXP :name', { name });
     }
 
     const [_categories, count] = await qb.getManyAndCount();
