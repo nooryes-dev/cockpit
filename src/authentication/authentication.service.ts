@@ -3,7 +3,6 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { STS } from 'ali-oss';
-import { SignInDto } from './dto/sign-in.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -55,7 +54,7 @@ export class AuthenticationService {
   /**
    * @description 登录
    */
-  async signIn({ to }: SignInDto, id: number) {
+  async signIn(id: number, to: string = 'nooryes-web') {
     const _user = await this.userService.getUserById(id);
     if (!_user) return { id };
     if (to !== this.configService.getAppBusinessEndEnd) return _user;

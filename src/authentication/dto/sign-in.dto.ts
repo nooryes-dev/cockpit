@@ -16,6 +16,8 @@ export class SignInDto {
 
   @ApiProperty({
     description: '登录系统',
+    default: 'nooryes-web',
+    required: false,
   })
-  to: string;
+  to?: string;
 }
