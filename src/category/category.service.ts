@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Category, TechStack } from '@/libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryCategoriesDto } from './dto/query-categories.dto';
@@ -135,17 +135,28 @@ export class CategoryService {
   /**
    * @description 搜索分类列表
    */
-  async searchCategories({ keyword }: SearchCategoriesDto) {
+  async searchCategories({ keyword, techStackCode }: SearchCategoriesDto) {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
       .select('category.code', 'code')
-      .addSelect('category.name', 'name');
+      .addSelect('category.name', 'name')
+      .where('1 = 1');
 
     if (!!keyword) {
-      qb.where('category.code REGEXP :keyword', { keyword }).orWhere(
-        'category.name REGEXP :keyword',
-        { keyword },
+      qb.andWhere(
+        new Brackets((qb) => {
+          qb.where('category.code REGEXP :keyword', { keyword }).orWhere(
+            'category.name REGEXP :keyword',
+            { keyword },
+          );
+        }),
       );
+    }
+
+    if (!!techStackCode) {
+      qb.andWhere('category.techStackCode = :techStackCode', {
+        techStackCode,
+      });
     }
 
     return await qb.skip(0).take(50).getRawMany<SearchedCategoriesDto>();
