@@ -1,8 +1,16 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { TechStack } from './tech-stack.entity';
+import { Article } from './article.entity';
 
 @ApiSchema({ description: '分类' })
 @Entity({
@@ -74,6 +82,9 @@ export class Category extends _Preset {
     referencedColumnName: 'code',
   })
   techStack: TechStack;
+
+  @ManyToMany(() => Article, (article) => article.categories)
+  articles: Article[];
 
   @BeforeInsert()
   private syncUpdatedBy() {

@@ -4,6 +4,7 @@ import { ConfigService } from '@/libs/config';
 import { User } from './entities/user.entity';
 import { TechStack } from './entities/tech-stack.entity';
 import { Category } from './entities/category.entity';
+import { Article } from './entities/article.entity';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { Category } from './entities/category.entity';
           port: 3306,
           username: 'root',
           database: configService.appCode,
-          entities: [User, TechStack, Category],
+          entities: [User, TechStack, Category, Article],
           synchronize: true,
         };
       },

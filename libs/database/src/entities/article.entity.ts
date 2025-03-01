@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
 } from 'typeorm';
@@ -56,10 +57,17 @@ export class Article extends _Preset {
   })
   updatedBy: User;
 
-  @ManyToMany(() => Category)
-  @JoinColumn({
-    name: 'category_code',
-    referencedColumnName: 'code',
+  @ManyToMany(() => Category, (category) => category.articles)
+  @JoinTable({
+    name: 'articles_to_categories',
+    joinColumn: {
+      name: 'article_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'category_code',
+      referencedColumnName: 'code',
+    },
   })
   categories: Category[];
 
