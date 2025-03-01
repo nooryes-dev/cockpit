@@ -3,38 +3,25 @@ import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { TechStack } from './tech-stack.entity';
+import { Category } from './category.entity';
 
-@ApiSchema({ description: '分类' })
+@ApiSchema({ description: '文章' })
 @Entity({
-  name: 'category',
+  name: 'article',
 })
-export class Category extends _Preset {
-  @ApiProperty({ description: '分类code' })
+export class Article extends _Preset {
+  @ApiProperty({ description: '文章标题' })
   @Column({
     type: 'varchar',
-    length: 20,
-    unique: true,
+    length: 50,
   })
-  code: string;
+  title: string;
 
-  @ApiProperty({ description: '分类名称' })
+  @ApiProperty({ description: '文章正文' })
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'longtext',
   })
-  name: string;
-
-  @ApiProperty({
-    description: '分类图标',
-    type: String,
-    nullable: true,
-  })
-  @Column({
-    type: 'varchar',
-    length: 128,
-    nullable: true,
-  })
-  logo: string | null;
+  content: string;
 
   @ApiProperty({ description: '创建人id', type: Number })
   @Column({
@@ -62,18 +49,18 @@ export class Category extends _Preset {
   })
   updatedBy: User;
 
-  @ApiProperty({ description: '技术栈code', type: String })
+  @ApiProperty({ description: '分类code', type: String })
   @Column({
-    name: 'tech_stack_code',
+    name: 'category_code',
   })
-  techStackCode: string;
+  categoryCode: string;
 
-  @ManyToOne(() => TechStack)
+  @ManyToOne(() => Category)
   @JoinColumn({
-    name: 'tech_stack_code',
+    name: 'category_code',
     referencedColumnName: 'code',
   })
-  techStack: TechStack;
+  category: TechStack;
 
   @BeforeInsert()
   private syncUpdatedBy() {

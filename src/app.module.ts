@@ -7,6 +7,7 @@ import { PassportModule } from '@/libs/passport';
 import { DatabaseModule } from '@/libs/database';
 import { TechStackModule } from './tech-stack/tech-stack.module';
 import { CategoryModule } from './category/category.module';
+import { ArticleModule } from './article/article.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CategoryModule } from './category/category.module';
     TechStackModule,
     // 分类模块
     CategoryModule,
+    ArticleModule,
   ],
 })
 export class AppModule {}
