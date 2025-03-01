@@ -3,7 +3,7 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 
 export class CreateArticleDto extends PickType(Article, ['title', 'content']) {
   @ApiProperty({
-    name: '关联分类codes',
+    description: '关联分类codes',
   })
   categoryCodes: string[];
 }

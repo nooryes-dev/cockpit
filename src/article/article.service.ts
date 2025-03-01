@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Article } from '@/libs/database/entities/article.entity';
 import { Category, User } from '@/libs/database';
 import { QueryArticlesDto } from './dto/query-articles.dto';
@@ -16,21 +16,24 @@ export class ArticleService {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     private readonly userService: UserService,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
    * @description 创建文章
    */
   async create(createArticleDto: CreateArticleDto, createdBy: User) {
+    const categories = await this.categoryRepository.findBy({
+      code: In(createArticleDto.categoryCodes),
+    });
+
     return (
       await this.articleRepository.save(
         this.articleRepository.create({
           title: createArticleDto.title,
           content: createArticleDto.content,
-          categories: createArticleDto.categoryCodes.map((code) =>
-            this.categoryRepository.create({ code }),
-          ),
           createdById: createdBy.id,
+          categories,
         }),
       )
     ).id;
@@ -39,19 +42,44 @@ export class ArticleService {
   /**
    * @description 更新文章
    */
-  async update(id: number, updateArticleDto: UpdateArticleDto, user: User) {
-    return (
-      ((
-        await this.articleRepository.update(id, {
-          title: updateArticleDto.title,
-          categories: updateArticleDto.categoryCodes?.map((code) =>
-            this.categoryRepository.create({ code }),
-          ),
-          content: updateArticleDto.content,
+  async update(
+    id: number,
+    { categoryCodes = [], ...updateArticleDto }: UpdateArticleDto,
+    user: User,
+  ) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.startTransaction();
+
+    try {
+      await this.articleRepository.update(
+        id,
+        this.articleRepository.create({
+          ...updateArticleDto,
           updatedById: user.id,
-        })
-      ).affected ?? 0) > 0
-    );
+        }),
+      );
+
+      await this.articleRepository
+        .createQueryBuilder()
+        .relation('categories')
+        .of(id)
+        .addAndRemove(
+          categoryCodes,
+          await this.articleRepository
+            .createQueryBuilder()
+            .relation('categories')
+            .of(id)
+            .loadMany<Category>(),
+        );
+
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      return false;
+    }
   }
 
   /**
@@ -60,8 +88,8 @@ export class ArticleService {
   async articles({ page, pageSize, categoryCodes = [] }: QueryArticlesDto) {
     const qb = this.articleRepository
       .createQueryBuilder('article')
+      .leftJoinAndSelect('article.categories', 'category')
       .where('1 = 1')
-      .innerJoinAndMapMany('article.categories', Category, 'category')
       .orderBy('article.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);

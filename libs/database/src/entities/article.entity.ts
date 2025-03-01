@@ -57,7 +57,9 @@ export class Article extends _Preset {
   })
   updatedBy: User;
 
-  @ManyToMany(() => Category, (category) => category.articles)
+  @ManyToMany(() => Category, (category) => category.articles, {
+    cascade: true,
+  })
   @JoinTable({
     name: 'articles_to_categories',
     joinColumn: {
