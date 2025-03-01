@@ -1,4 +1,11 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -49,18 +56,12 @@ export class Article extends _Preset {
   })
   updatedBy: User;
 
-  @ApiProperty({ description: '分类code', type: String })
-  @Column({
-    name: 'category_code',
-  })
-  categoryCode: string;
-
-  @ManyToOne(() => Category)
+  @ManyToMany(() => Category)
   @JoinColumn({
     name: 'category_code',
     referencedColumnName: 'code',
   })
-  category: TechStack;
+  categories: Category[];
 
   @BeforeInsert()
   private syncUpdatedBy() {

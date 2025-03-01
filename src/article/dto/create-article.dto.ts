@@ -1,8 +1,9 @@
 import { Article } from '@/libs/database/entities/article.entity';
-import { PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 
-export class CreateArticleDto extends PickType(Article, [
-  'title',
-  'content',
-  'categoryCode',
-]) {}
+export class CreateArticleDto extends PickType(Article, ['title', 'content']) {
+  @ApiProperty({
+    name: '关联分类codes',
+  })
+  categoryCodes: string[];
+}
