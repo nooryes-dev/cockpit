@@ -85,7 +85,12 @@ export class ArticleService {
   /**
    * @description 分页获取文章列表
    */
-  async articles({ page, pageSize, categoryCodes = [] }: QueryArticlesDto) {
+  async articles({
+    page,
+    pageSize,
+    categoryCodes = [],
+    keyword,
+  }: QueryArticlesDto) {
     const qb = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.categories', 'category')
@@ -96,6 +101,10 @@ export class ArticleService {
 
     if (categoryCodes.length > 0) {
       qb.andWhere('category.code IN (:...categoryCodes)', { categoryCodes });
+    }
+
+    if (!!keyword) {
+      qb.andWhere('article.title REGEXP :keyword', { keyword });
     }
 
     const [_articles, count] = await qb.getManyAndCount();
