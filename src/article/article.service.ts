@@ -123,6 +123,9 @@ export class ArticleService {
       where: {
         id,
       },
+      relations: {
+        categories: true,
+      },
     });
   }
 
