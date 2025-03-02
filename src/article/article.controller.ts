@@ -15,7 +15,12 @@ import {
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { ApiBearerAuth, ApiExtraModels, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
@@ -25,6 +30,7 @@ import { Article } from '@/libs/database/entities/article.entity';
 import { QueryArticlesDto } from './dto/query-articles.dto';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 
+@ApiTags('文章')
 @ApiExtraModels(Article)
 @Controller('article')
 export class ArticleController {
