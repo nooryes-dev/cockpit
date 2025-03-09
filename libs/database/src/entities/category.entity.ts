@@ -11,6 +11,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { TechStack } from './tech-stack.entity';
 import { Article } from './article.entity';
+import { Question } from './question.entity';
 
 @ApiSchema({ description: '分类' })
 @Entity({
@@ -85,6 +86,9 @@ export class Category extends _Preset {
 
   @ManyToMany(() => Article, (article) => article.categories)
   articles: Article[];
+
+  @ManyToMany(() => Question, (question) => question.categories)
+  questions: Question[];
 
   @BeforeInsert()
   private syncUpdatedBy() {

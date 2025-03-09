@@ -9,7 +9,6 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
-  ParseArrayPipe,
   UseInterceptors,
 } from '@nestjs/common';
 import { ArticleService } from './article.service';
@@ -74,15 +73,8 @@ export class ArticleController {
   @ApiUnifiedPaginatedResponse(Article)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('list')
-  articles(
-    @Query() queryCategoriesDto: QueryArticlesDto,
-    @Query('categoryCodes', new ParseArrayPipe({ optional: true }))
-    categoryCodes: QueryArticlesDto['categoryCodes'],
-  ) {
-    return this.articleService.articles({
-      ...queryCategoriesDto,
-      categoryCodes,
-    });
+  articles(@Query() queryCategoriesDto: QueryArticlesDto) {
+    return this.articleService.articles(queryCategoriesDto);
   }
 
   @ApiOperation({ summary: '获取文章详情' })

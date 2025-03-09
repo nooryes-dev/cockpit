@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { CreateArticleDto } from './dto/create-article.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
+import { CreateQuestionDto } from './dto/create-question.dto';
+import { UpdateQuestionDto } from './dto/update-question.dto';
 import { DataSource, Repository } from 'typeorm';
-import { Article } from '@/libs/database/entities/article.entity';
 import { Category, User } from '@/libs/database';
-import { QueryArticlesDto } from './dto/query-articles.dto';
+import { QueryQuestionsDto } from './dto/query-questions.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Question } from '@/libs/database/entities/question.entity';
 
 @Injectable()
-export class ArticleService {
+export class QuestionService {
   constructor(
-    @InjectRepository(Article)
-    private readonly articleRepository: Repository<Article>,
+    @InjectRepository(Question)
+    private readonly questionRepository: Repository<Question>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     private readonly userService: UserService,
@@ -20,18 +20,17 @@ export class ArticleService {
   ) {}
 
   /**
-   * @description 创建文章
+   * @description 创建问题
    */
-  async create(createArticleDto: CreateArticleDto, createdBy: User) {
+  async create(createQuestionDto: CreateQuestionDto, createdBy: User) {
     const categories = await this.categoryRepository.findBy({
-      code: createArticleDto.categoryCode,
+      code: createQuestionDto.categoryCode,
     });
 
     return (
-      await this.articleRepository.save(
-        this.articleRepository.create({
-          title: createArticleDto.title,
-          content: createArticleDto.content,
+      await this.questionRepository.save(
+        this.questionRepository.create({
+          topic: createQuestionDto.topic,
           createdById: createdBy.id,
           categories,
         }),
@@ -40,32 +39,32 @@ export class ArticleService {
   }
 
   /**
-   * @description 更新文章
+   * @description 更新问题
    */
   async update(
     id: number,
-    { categoryCode, ...updateArticleDto }: UpdateArticleDto,
+    { categoryCode, ...updateQuestionDto }: UpdateQuestionDto,
     user: User,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.startTransaction();
 
     try {
-      await this.articleRepository.update(
+      await this.questionRepository.update(
         id,
-        this.articleRepository.create({
-          ...updateArticleDto,
+        this.questionRepository.create({
+          ...updateQuestionDto,
           updatedById: user.id,
         }),
       );
 
-      await this.articleRepository
+      await this.questionRepository
         .createQueryBuilder()
         .relation('categories')
         .of(id)
         .addAndRemove(
           [categoryCode],
-          await this.articleRepository
+          await this.questionRepository
             .createQueryBuilder()
             .relation('categories')
             .of(id)
@@ -83,14 +82,14 @@ export class ArticleService {
   }
 
   /**
-   * @description 分页获取文章列表
+   * @description 分页获取问题列表
    */
-  async articles({ page, pageSize, categoryCode, keyword }: QueryArticlesDto) {
-    const qb = this.articleRepository
-      .createQueryBuilder('article')
-      .leftJoinAndSelect('article.categories', 'category')
+  async questions({ page, pageSize, categoryCode }: QueryQuestionsDto) {
+    const qb = this.questionRepository
+      .createQueryBuilder('question')
+      .leftJoinAndSelect('question.categories', 'category')
       .where('1 = 1')
-      .orderBy('article.id')
+      .orderBy('question.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 
@@ -98,14 +97,10 @@ export class ArticleService {
       qb.andWhere('category.code = :categoryCode', { categoryCode });
     }
 
-    if (!!keyword) {
-      qb.andWhere('article.title REGEXP :keyword', { keyword });
-    }
-
-    const [_articles, count] = await qb.getManyAndCount();
+    const [_questions, count] = await qb.getManyAndCount();
 
     return [
-      await this.userService.getUsersByIds(_articles, {
+      await this.userService.getUsersByIds(_questions, {
         createdById: 'createdBy',
         updatedById: 'updatedBy',
       }),
@@ -113,8 +108,8 @@ export class ArticleService {
     ];
   }
 
-  article(id: number) {
-    return this.articleRepository.findOne({
+  question(id: number) {
+    return this.questionRepository.findOne({
       where: {
         id,
       },
@@ -125,12 +120,12 @@ export class ArticleService {
   }
 
   /**
-   * @description 删除文章
+   * @description 删除问题
    */
   async remove(id: number, user: User) {
     return (
       ((
-        await this.articleRepository.update(id, {
+        await this.questionRepository.update(id, {
           deletedAt: new Date(),
           updatedById: user.id,
         })

@@ -12,23 +12,16 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Category } from './category.entity';
 
-@ApiSchema({ description: '文章' })
+@ApiSchema({ description: '问题' })
 @Entity({
-  name: 'article',
+  name: 'question',
 })
-export class Article extends _Preset {
-  @ApiProperty({ description: '文章标题' })
-  @Column({
-    type: 'varchar',
-    length: 50,
-  })
-  title: string;
-
-  @ApiProperty({ description: '文章正文' })
+export class Question extends _Preset {
+  @ApiProperty({ description: '题目' })
   @Column({
     type: 'longtext',
   })
-  content: string;
+  topic: string;
 
   @ApiProperty({ description: '创建人id', type: Number })
   @Column({
@@ -56,13 +49,13 @@ export class Article extends _Preset {
   })
   updatedBy: User;
 
-  @ManyToMany(() => Category, (category) => category.articles, {
+  @ManyToMany(() => Category, (category) => category.questions, {
     cascade: true,
   })
   @JoinTable({
-    name: 'articles_to_categories',
+    name: 'questions_to_categories',
     joinColumn: {
-      name: 'article_id',
+      name: 'question_id',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {

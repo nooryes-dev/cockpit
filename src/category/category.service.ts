@@ -135,11 +135,19 @@ export class CategoryService {
   /**
    * @description 搜索分类列表
    */
-  async searchCategories({ keyword, techStackCode }: SearchCategoriesDto) {
+  async searchCategories({
+    keyword,
+  }: SearchCategoriesDto): Promise<SearchedCategoriesDto[]> {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
+      .leftJoin(
+        'category.techStack',
+        'techStack',
+        'techStack.code = category.techStackCode',
+      )
       .select('category.code', 'code')
       .addSelect('category.name', 'name')
+      .addSelect('techStack.name', 'techStackName')
       .where('1 = 1');
 
     if (!!keyword) {
@@ -153,12 +161,16 @@ export class CategoryService {
       );
     }
 
-    if (!!techStackCode) {
-      qb.andWhere('category.techStackCode = :techStackCode', {
-        techStackCode,
-      });
-    }
-
-    return await qb.skip(0).take(50).getRawMany<SearchedCategoriesDto>();
+    return (
+      await qb
+        .skip(0)
+        .take(50)
+        .getRawMany<SearchedCategoriesDto & { techStackName: string }>()
+    ).map(({ code, name, techStackName }) => {
+      return {
+        code,
+        name: `${techStackName}-${name}`,
+      };
+    });
   }
 }
