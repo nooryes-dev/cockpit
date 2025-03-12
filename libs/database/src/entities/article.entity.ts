@@ -1,12 +1,4 @@
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-} from 'typeorm';
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -56,21 +48,18 @@ export class Article extends _Preset {
   })
   updatedBy: User;
 
-  @ManyToMany(() => Category, (category) => category.articles, {
-    cascade: true,
+  @ApiProperty({ description: '分类code', type: String })
+  @Column({
+    name: 'category_code',
   })
-  @JoinTable({
-    name: 'articles_to_categories',
-    joinColumn: {
-      name: 'article_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'category_code',
-      referencedColumnName: 'code',
-    },
+  categoryCode: string;
+
+  @ManyToOne(() => Category)
+  @JoinColumn({
+    name: 'category_code',
+    referencedColumnName: 'code',
   })
-  categories: Category[];
+  category: Category;
 
   @BeforeInsert()
   private syncUpdatedBy() {

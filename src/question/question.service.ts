@@ -23,16 +23,12 @@ export class QuestionService {
    * @description 创建问题
    */
   async create(createQuestionDto: CreateQuestionDto, createdBy: User) {
-    const categories = await this.categoryRepository.findBy({
-      code: createQuestionDto.categoryCode,
-    });
-
     return (
       await this.questionRepository.save(
         this.questionRepository.create({
           topic: createQuestionDto.topic,
           createdById: createdBy.id,
-          categories,
+          categoryCode: createQuestionDto.categoryCode,
         }),
       )
     ).id;
@@ -41,44 +37,18 @@ export class QuestionService {
   /**
    * @description 更新问题
    */
-  async update(
-    id: number,
-    { categoryCode, ...updateQuestionDto }: UpdateQuestionDto,
-    user: User,
-  ) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.startTransaction();
-
-    try {
-      await this.questionRepository.update(
-        id,
-        this.questionRepository.create({
-          ...updateQuestionDto,
-          updatedById: user.id,
-        }),
-      );
-
-      await this.questionRepository
-        .createQueryBuilder()
-        .relation('categories')
-        .of(id)
-        .addAndRemove(
-          [categoryCode],
-          await this.questionRepository
-            .createQueryBuilder()
-            .relation('categories')
-            .of(id)
-            .loadMany<Category>(),
-        );
-
-      await queryRunner.commitTransaction();
-      await queryRunner.release();
-      return true;
-    } catch {
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      return false;
-    }
+  async update(id: number, updateQuestionDto: UpdateQuestionDto, user: User) {
+    return (
+      ((
+        await this.questionRepository.update(
+          id,
+          this.questionRepository.create({
+            ...updateQuestionDto,
+            updatedById: user.id,
+          }),
+        )
+      ).affected ?? 0) > 0
+    );
   }
 
   /**
@@ -87,14 +57,14 @@ export class QuestionService {
   async questions({ page, pageSize, categoryCode }: QueryQuestionsDto) {
     const qb = this.questionRepository
       .createQueryBuilder('question')
-      .leftJoinAndSelect('question.categories', 'category')
+      .leftJoinAndSelect('question.category', 'category')
       .where('1 = 1')
       .orderBy('question.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 
     if (!!categoryCode) {
-      qb.andWhere('category.code = :categoryCode', { categoryCode });
+      qb.andWhere('question.categoryCode = :categoryCode', { categoryCode });
     }
 
     const [_questions, count] = await qb.getManyAndCount();
@@ -114,7 +84,7 @@ export class QuestionService {
         id,
       },
       relations: {
-        categories: true,
+        category: true,
       },
     });
   }

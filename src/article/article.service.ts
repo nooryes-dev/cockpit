@@ -23,17 +23,13 @@ export class ArticleService {
    * @description 创建文章
    */
   async create(createArticleDto: CreateArticleDto, createdBy: User) {
-    const categories = await this.categoryRepository.findBy({
-      code: createArticleDto.categoryCode,
-    });
-
     return (
       await this.articleRepository.save(
         this.articleRepository.create({
           title: createArticleDto.title,
           content: createArticleDto.content,
           createdById: createdBy.id,
-          categories,
+          categoryCode: createArticleDto.categoryCode,
         }),
       )
     ).id;
@@ -42,44 +38,18 @@ export class ArticleService {
   /**
    * @description 更新文章
    */
-  async update(
-    id: number,
-    { categoryCode, ...updateArticleDto }: UpdateArticleDto,
-    user: User,
-  ) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.startTransaction();
-
-    try {
-      await this.articleRepository.update(
-        id,
-        this.articleRepository.create({
-          ...updateArticleDto,
-          updatedById: user.id,
-        }),
-      );
-
-      await this.articleRepository
-        .createQueryBuilder()
-        .relation('categories')
-        .of(id)
-        .addAndRemove(
-          [categoryCode],
-          await this.articleRepository
-            .createQueryBuilder()
-            .relation('categories')
-            .of(id)
-            .loadMany<Category>(),
-        );
-
-      await queryRunner.commitTransaction();
-      await queryRunner.release();
-      return true;
-    } catch {
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      return false;
-    }
+  async update(id: number, updateArticleDto: UpdateArticleDto, user: User) {
+    return (
+      ((
+        await this.articleRepository.update(
+          id,
+          this.articleRepository.create({
+            ...updateArticleDto,
+            updatedById: user.id,
+          }),
+        )
+      ).affected ?? 0) > 0
+    );
   }
 
   /**
@@ -88,14 +58,14 @@ export class ArticleService {
   async articles({ page, pageSize, categoryCode, keyword }: QueryArticlesDto) {
     const qb = this.articleRepository
       .createQueryBuilder('article')
-      .leftJoinAndSelect('article.categories', 'category')
+      .leftJoinAndSelect('article.category', 'category')
       .where('1 = 1')
       .orderBy('article.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 
     if (!!categoryCode) {
-      qb.andWhere('category.code = :categoryCode', { categoryCode });
+      qb.andWhere('article.categoryCode = :categoryCode', { categoryCode });
     }
 
     if (!!keyword) {
@@ -119,7 +89,7 @@ export class ArticleService {
         id,
       },
       relations: {
-        categories: true,
+        category: true,
       },
     });
   }
