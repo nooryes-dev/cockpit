@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Article } from '@/libs/database/entities/article.entity';
-import { Category, User } from '@/libs/database';
+import { User } from '@/libs/database';
 import { QueryArticlesDto } from './dto/query-articles.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,10 +13,7 @@ export class ArticleService {
   constructor(
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
     private readonly userService: UserService,
-    private readonly dataSource: DataSource,
   ) {}
 
   /**

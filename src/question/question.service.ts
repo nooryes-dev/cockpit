@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
-import { DataSource, Repository } from 'typeorm';
-import { Category, User } from '@/libs/database';
+import { Repository } from 'typeorm';
+import { User } from '@/libs/database';
 import { QueryQuestionsDto } from './dto/query-questions.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,10 +13,7 @@ export class QuestionService {
   constructor(
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
     private readonly userService: UserService,
-    private readonly dataSource: DataSource,
   ) {}
 
   /**
