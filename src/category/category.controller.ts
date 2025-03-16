@@ -31,11 +31,11 @@ import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-respons
 import { QueryCategoriesDto } from './dto/query-categories.dto';
 import {
   SearchCategoriesDto,
-  SearchedCategoriesDto,
+  SearchedCategoryDto,
 } from './dto/search-categories.dto';
 
 @ApiTags('分类')
-@ApiExtraModels(Category, SearchedCategoriesDto)
+@ApiExtraModels(Category, SearchedCategoryDto)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -98,10 +98,10 @@ export class CategoryController {
   @ApiOperation({ summary: '搜索分类' })
   @ApiUnifiedResponse({
     type: 'array',
-    items: { $ref: getSchemaPath(SearchedCategoriesDto) },
+    items: { $ref: getSchemaPath(SearchedCategoryDto) },
   })
   @Get('search')
-  searchCategoriesDto(@Query() searchCategoriesDto: SearchCategoriesDto) {
+  search(@Query() searchCategoriesDto: SearchCategoriesDto) {
     return this.categoryService.searchCategories(searchCategoriesDto);
   }
 

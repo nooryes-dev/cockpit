@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseIntPipe,
   Query,
   UseInterceptors,
 } from '@nestjs/common';
@@ -28,6 +27,10 @@ import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginate
 import { Article } from '@/libs/database/entities/article.entity';
 import { QueryArticlesDto } from './dto/query-articles.dto';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
+import {
+  SearchArticlesDto,
+  SearchedArticleDto,
+} from './dto/search-articles.dto';
 
 @ApiTags('文章')
 @ApiExtraModels(Article)
@@ -53,7 +56,7 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto,
     @WhoAmI() user: User,
   ) {
@@ -65,7 +68,7 @@ export class ArticleController {
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @WhoAmI() user: User) {
+  remove(@Param('id') id: string, @WhoAmI() user: User) {
     return this.articleService.remove(id, user);
   }
 
@@ -80,7 +83,15 @@ export class ArticleController {
   @ApiOperation({ summary: '获取文章详情' })
   @ApiUnifiedResponse(Article)
   @Get(':id')
-  article(@Param('id', ParseIntPipe) id: number) {
+  article(@Param('id') id: string) {
     return this.articleService.article(id);
+  }
+
+  @ApiOperation({ summary: 'C端页面模糊搜索知识点' })
+  @ApiUnifiedPaginatedResponse(SearchedArticleDto)
+  @UseInterceptors(PaginatedResponseInterceptor)
+  @Get('search')
+  search(@Query() searchArticlesDto: SearchArticlesDto) {
+    return this.articleService.search(searchArticlesDto);
   }
 }

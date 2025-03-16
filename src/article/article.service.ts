@@ -7,6 +7,10 @@ import { User } from '@/libs/database';
 import { QueryArticlesDto } from './dto/query-articles.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  SearchArticlesDto,
+  SearchedArticleDto,
+} from './dto/search-articles.dto';
 
 @Injectable()
 export class ArticleService {
@@ -35,7 +39,7 @@ export class ArticleService {
   /**
    * @description 更新文章
    */
-  async update(id: number, updateArticleDto: UpdateArticleDto, user: User) {
+  async update(id: string, updateArticleDto: UpdateArticleDto, user: User) {
     return (
       ((
         await this.articleRepository.update(
@@ -80,7 +84,7 @@ export class ArticleService {
     ];
   }
 
-  article(id: number) {
+  article(id: string) {
     return this.articleRepository.findOne({
       where: {
         id,
@@ -94,7 +98,7 @@ export class ArticleService {
   /**
    * @description 删除文章
    */
-  async remove(id: number, user: User) {
+  async remove(id: string, user: User) {
     return (
       ((
         await this.articleRepository.update(id, {
@@ -103,5 +107,33 @@ export class ArticleService {
         })
       ).affected ?? 0) > 0
     );
+  }
+
+  /**
+   * @description C端搜索文章
+   */
+  async search({ categoryCode, keyword }: SearchArticlesDto) {
+    const qb = this.articleRepository.createQueryBuilder();
+
+    if (!!categoryCode) {
+      qb.andWhere('article.categoryCode = :categoryCode', { categoryCode });
+    }
+
+    if (!!keyword) {
+      qb.andWhere('article.title REGEXP :keyword', { keyword });
+    }
+
+    const [_articles, count] = await qb.getManyAndCount();
+
+    return [
+      _articles.map<SearchedArticleDto>((_article) => {
+        return {
+          content: _article.content,
+          id: _article.id,
+          title: _article.title,
+        };
+      }),
+      count,
+    ];
   }
 }

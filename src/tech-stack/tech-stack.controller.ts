@@ -87,14 +87,14 @@ export class TechStackController {
     return this.techStackService.techStacks(params);
   }
 
-  @ApiOperation({ summary: '搜索技术栈' })
+  @ApiOperation({ summary: 'C端搜索技术栈' })
   @ApiUnifiedResponse({
     type: 'array',
     items: { $ref: getSchemaPath(SearchedTechStackDto) },
   })
   @Get('search')
-  searchTechStacks(@Query() searchTechStacksDto: SearchTechStacksDto) {
-    return this.techStackService.searchTechStacks(searchTechStacksDto);
+  search(@Query() searchTechStacksDto: SearchTechStacksDto) {
+    return this.techStackService.search(searchTechStacksDto);
   }
 
   @ApiOperation({ summary: '获取技术栈详情' })

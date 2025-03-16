@@ -11,7 +11,7 @@ export class SearchCategoriesDto {
 }
 
 @ApiSchema({ description: '分类搜索结果' })
-export class SearchedCategoriesDto {
+export class SearchedCategoryDto {
   @ApiProperty({
     description: '分类code',
     type: 'string',

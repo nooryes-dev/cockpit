@@ -120,9 +120,9 @@ export class TechStackService {
   }
 
   /**
-   * @description 搜索技术栈列表
+   * @description C端搜索技术栈列表
    */
-  async searchTechStacks({ keyword }: SearchTechStacksDto) {
+  async search({ keyword }: SearchTechStacksDto) {
     const qb = this.techStackRepository
       .createQueryBuilder('techStack')
       .select('techStack.code', 'code')

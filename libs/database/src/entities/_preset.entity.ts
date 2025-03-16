@@ -6,11 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export class _Preset {
-  @ApiProperty({ description: 'id' })
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class _PresetDate {
   @ApiProperty({ description: '创建时间' })
   @CreateDateColumn({
     name: 'created_at',
@@ -28,4 +24,10 @@ export class _Preset {
     select: false,
   })
   deletedAt: Date;
+}
+
+export class _Preset extends _PresetDate {
+  @ApiProperty({ description: 'id' })
+  @PrimaryGeneratedColumn()
+  id: number;
 }
