@@ -1,7 +1,8 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { Pagination } from 'typings/pagination.types';
 
 @ApiSchema({ description: '搜索知识点列表参数' })
-export class SearchArticlesDto {
+export class SearchArticlesDto extends Pagination {
   @ApiProperty({
     description: '二级分类code',
     required: false,

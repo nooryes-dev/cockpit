@@ -112,8 +112,18 @@ export class ArticleService {
   /**
    * @description C端搜索文章
    */
-  async search({ categoryCode, keyword }: SearchArticlesDto) {
-    const qb = this.articleRepository.createQueryBuilder('article');
+  async search({
+    categoryCode,
+    keyword,
+    page = 1,
+    pageSize = 10,
+  }: SearchArticlesDto) {
+    const qb = this.articleRepository
+      .createQueryBuilder('article')
+      .where('1 = 1')
+      .orderBy('article.id')
+      .offset((page - 1) * pageSize)
+      .limit(pageSize);
 
     if (!!categoryCode) {
       qb.andWhere('article.categoryCode = :categoryCode', { categoryCode });
