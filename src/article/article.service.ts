@@ -141,12 +141,20 @@ export class ArticleService {
    * @description 查询热门的知识点
    */
   async hot() {
-    return await this.articleRepository
-      .createQueryBuilder('article')
-      .limit(10)
-      .orderBy({
-        'article.updatedAt': 'DESC',
-      })
-      .getMany();
+    return (
+      await this.articleRepository
+        .createQueryBuilder('article')
+        .limit(10)
+        .orderBy({
+          'article.updatedAt': 'DESC',
+        })
+        .getMany()
+    ).map<SearchedArticleDto>((_article) => {
+      return {
+        id: _article.id,
+        title: _article.title,
+        content: _article.content,
+      };
+    });
   }
 }
