@@ -1,5 +1,12 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { _Preset } from './_preset.entity';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { _PresetDate } from './_preset.entity';
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Category } from './category.entity';
@@ -8,12 +15,22 @@ import { Category } from './category.entity';
 @Entity({
   name: 'question',
 })
-export class Question extends _Preset {
+export class Question extends _PresetDate {
+  @ApiProperty({ description: 'id' })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
   @ApiProperty({ description: '题目' })
   @Column({
     type: 'longtext',
   })
   topic: string;
+
+  @ApiProperty({ description: '题解' })
+  @Column({
+    type: 'longtext',
+  })
+  answer: string;
 
   @ApiProperty({ description: '创建人id', type: Number })
   @Column({

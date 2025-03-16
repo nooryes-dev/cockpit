@@ -23,9 +23,8 @@ export class QuestionService {
     return (
       await this.questionRepository.save(
         this.questionRepository.create({
-          topic: createQuestionDto.topic,
+          ...createQuestionDto,
           createdById: createdBy.id,
-          categoryCode: createQuestionDto.categoryCode,
         }),
       )
     ).id;
@@ -34,7 +33,7 @@ export class QuestionService {
   /**
    * @description 更新问题
    */
-  async update(id: number, updateQuestionDto: UpdateQuestionDto, user: User) {
+  async update(id: string, updateQuestionDto: UpdateQuestionDto, user: User) {
     return (
       ((
         await this.questionRepository.update(
@@ -75,7 +74,10 @@ export class QuestionService {
     ];
   }
 
-  question(id: number) {
+  /**
+   * @description 查询问题明细
+   */
+  question(id: string) {
     return this.questionRepository.findOne({
       where: {
         id,
@@ -89,7 +91,7 @@ export class QuestionService {
   /**
    * @description 删除问题
    */
-  async remove(id: number, user: User) {
+  async remove(id: string, user: User) {
     return (
       ((
         await this.questionRepository.update(id, {

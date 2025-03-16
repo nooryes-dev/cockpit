@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseIntPipe,
   Query,
   UseInterceptors,
 } from '@nestjs/common';
@@ -53,7 +52,7 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateQuestionDto: UpdateQuestionDto,
     @WhoAmI() user: User,
   ) {
@@ -65,7 +64,7 @@ export class QuestionController {
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number, @WhoAmI() user: User) {
+  remove(@Param('id') id: string, @WhoAmI() user: User) {
     return this.questionService.remove(id, user);
   }
 
@@ -80,7 +79,7 @@ export class QuestionController {
   @ApiOperation({ summary: '获取问题详情' })
   @ApiUnifiedResponse(Question)
   @Get(':id')
-  question(@Param('id', ParseIntPipe) id: number) {
+  question(@Param('id') id: string) {
     return this.questionService.question(id);
   }
 }
