@@ -113,7 +113,7 @@ export class ArticleService {
    * @description C端搜索文章
    */
   async search({ categoryCode, keyword }: SearchArticlesDto) {
-    const qb = this.articleRepository.createQueryBuilder();
+    const qb = this.articleRepository.createQueryBuilder('article');
 
     if (!!categoryCode) {
       qb.andWhere('article.categoryCode = :categoryCode', { categoryCode });
@@ -128,12 +128,12 @@ export class ArticleService {
     return [
       _articles.map<SearchedArticleDto>((_article) => {
         return {
-          content: _article.content,
           id: _article.id,
           title: _article.title,
+          content: _article.content,
         };
       }),
       count,
-    ];
+    ] as const;
   }
 }

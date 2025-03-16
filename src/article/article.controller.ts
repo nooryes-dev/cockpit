@@ -18,6 +18,7 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -33,7 +34,7 @@ import {
 } from './dto/search-articles.dto';
 
 @ApiTags('文章')
-@ApiExtraModels(Article)
+@ApiExtraModels(Article, SearchedArticleDto)
 @Controller('article')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
@@ -80,18 +81,28 @@ export class ArticleController {
     return this.articleService.articles(queryCategoriesDto);
   }
 
-  @ApiOperation({ summary: '获取文章详情' })
-  @ApiUnifiedResponse(Article)
-  @Get(':id')
-  article(@Param('id') id: string) {
-    return this.articleService.article(id);
-  }
-
   @ApiOperation({ summary: 'C端页面模糊搜索知识点' })
   @ApiUnifiedPaginatedResponse(SearchedArticleDto)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('search')
   search(@Query() searchArticlesDto: SearchArticlesDto) {
     return this.articleService.search(searchArticlesDto);
+  }
+
+  @ApiOperation({ summary: '热门知识点' })
+  @ApiUnifiedResponse({
+    type: 'array',
+    items: { $ref: getSchemaPath(SearchedArticleDto) },
+  })
+  @Get('hot')
+  hot() {
+    return this.articleService.search({});
+  }
+
+  @ApiOperation({ summary: '获取文章详情' })
+  @ApiUnifiedResponse(Article)
+  @Get(':id')
+  article(@Param('id') id: string) {
+    return this.articleService.article(id);
   }
 }
