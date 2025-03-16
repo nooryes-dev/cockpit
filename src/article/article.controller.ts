@@ -96,7 +96,7 @@ export class ArticleController {
   })
   @Get('hot')
   hot() {
-    return this.articleService.search({});
+    return this.articleService.hot();
   }
 
   @ApiOperation({ summary: '获取文章详情' })
