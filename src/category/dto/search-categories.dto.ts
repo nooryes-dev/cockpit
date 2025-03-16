@@ -8,6 +8,13 @@ export class SearchCategoriesDto {
     type: 'string',
   })
   keyword?: string;
+
+  @ApiProperty({
+    description: '技术栈（一级分类）code',
+    required: false,
+    type: 'string',
+  })
+  techStackCode?: string;
 }
 
 @ApiSchema({ description: '分类搜索结果' })

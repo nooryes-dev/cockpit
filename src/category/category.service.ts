@@ -8,7 +8,7 @@ import { QueryCategoriesDto } from './dto/query-categories.dto';
 import { UserService } from 'src/user/user.service';
 import {
   SearchCategoriesDto,
-  SearchedCategoriesDto,
+  SearchedCategoryDto,
 } from './dto/search-categories.dto';
 
 @Injectable()
@@ -137,7 +137,8 @@ export class CategoryService {
    */
   async searchCategories({
     keyword,
-  }: SearchCategoriesDto): Promise<SearchedCategoriesDto[]> {
+    techStackCode,
+  }: SearchCategoriesDto): Promise<SearchedCategoryDto[]> {
     const qb = this.categoryRepository
       .createQueryBuilder('category')
       .leftJoin(
@@ -161,11 +162,16 @@ export class CategoryService {
       );
     }
 
+    // 筛选技术栈
+    if (!!techStackCode) {
+      qb.andWhere('techStack.code = :techStackCode', { techStackCode });
+    }
+
     return (
       await qb
         .skip(0)
         .take(50)
-        .getRawMany<SearchedCategoriesDto & { techStackName: string }>()
+        .getRawMany<SearchedCategoryDto & { techStackName: string }>()
     ).map(({ code, name, techStackName }) => {
       return {
         code,
