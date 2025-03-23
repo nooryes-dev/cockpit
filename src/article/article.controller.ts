@@ -110,16 +110,28 @@ export class ArticleController {
   }
 
   @ApiOperation({ summary: '发布文章' })
-  @ApiUnifiedResponse(Article)
+  @ApiBearerAuth()
+  @ApiUnifiedResponse({ type: 'boolean' })
+  @UseGuards(JwtAuthGuard)
   @Patch('publish/:id')
-  publish(@Param('id') id: string) {
-    return this.articleService.updateStatus(id, ArticleStatus.Published);
+  publish(@Param('id') id: string, @WhoAmI() user: User) {
+    return this.articleService.updateStatus(
+      id,
+      ArticleStatus.Published,
+      user.id,
+    );
   }
 
   @ApiOperation({ summary: '撤回文章' })
-  @ApiUnifiedResponse(Article)
+  @ApiBearerAuth()
+  @ApiUnifiedResponse({ type: 'boolean' })
+  @UseGuards(JwtAuthGuard)
   @Patch('withdraw/:id')
-  withdraw(@Param('id') id: string) {
-    return this.articleService.updateStatus(id, ArticleStatus.Withdrawn);
+  withdraw(@Param('id') id: string, @WhoAmI() user: User) {
+    return this.articleService.updateStatus(
+      id,
+      ArticleStatus.Withdrawn,
+      user.id,
+    );
   }
 }

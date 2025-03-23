@@ -188,11 +188,12 @@ export class ArticleService {
   /**
    * @description 更新文章状态
    */
-  async updateStatus(id: string, status: ArticleStatus) {
+  async updateStatus(id: string, status: ArticleStatus, updatedById: number) {
     return (
       ((
         await this.articleRepository.update(id, {
           status,
+          updatedById,
         })
       ).affected ?? 0) > 0
     );
