@@ -175,7 +175,8 @@ export class CategoryService {
     ).map(({ code, name, techStackName }) => {
       return {
         code,
-        name: `${techStackName}-${name}`,
+        name,
+        techStackName,
       };
     });
   }

@@ -34,4 +34,9 @@ export class SearchedArticleDto {
     description: '知识点内容',
   })
   content: string;
+
+  @ApiProperty({
+    description: '分类code',
+  })
+  categoryCode: string;
 }

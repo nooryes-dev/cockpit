@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Repository } from 'typeorm';
-import { Article } from '@/libs/database/entities/article.entity';
+import {
+  Article,
+  ArticleStatus,
+} from '@/libs/database/entities/article.entity';
 import { User } from '@/libs/database';
 import { QueryArticlesDto } from './dto/query-articles.dto';
 import { UserService } from 'src/user/user.service';
@@ -55,6 +58,8 @@ export class ArticleService {
 
   /**
    * @description 分页获取文章列表
+   * 接口用于管理端页面：
+   * 1. 不需要过滤状态
    */
   async articles({ page, pageSize, categoryCode, keyword }: QueryArticlesDto) {
     const qb = this.articleRepository
@@ -84,6 +89,9 @@ export class ArticleService {
     ];
   }
 
+  /**
+   * @description 查询文章详情
+   */
   article(id: string) {
     return this.articleRepository.findOne({
       where: {
@@ -111,6 +119,7 @@ export class ArticleService {
 
   /**
    * @description C端搜索文章
+   * 1. 过滤文章状态在有效范围内
    */
   async search({
     categoryCode,
@@ -120,7 +129,9 @@ export class ArticleService {
   }: SearchArticlesDto) {
     const qb = this.articleRepository
       .createQueryBuilder('article')
-      .where('1 = 1')
+      .where('article.status IN (:...articleStatuses)', {
+        articleStatuses: Article.validStatuses,
+      })
       .orderBy('article.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
@@ -141,6 +152,7 @@ export class ArticleService {
           id: _article.id,
           title: _article.title,
           content: _article.content,
+          categoryCode: _article.categoryCode,
         };
       }),
       count,
@@ -149,11 +161,15 @@ export class ArticleService {
 
   /**
    * @description 查询热门的知识点
+   * 1. 过滤文章状态在有效范围内
    */
   async hot() {
     return (
       await this.articleRepository
         .createQueryBuilder('article')
+        .where('article.status IN (:...articleStatuses)', {
+          articleStatuses: Article.validStatuses,
+        })
         .limit(10)
         .orderBy({
           'article.updatedAt': 'DESC',
@@ -164,7 +180,21 @@ export class ArticleService {
         id: _article.id,
         title: _article.title,
         content: _article.content,
+        categoryCode: _article.categoryCode,
       };
     });
+  }
+
+  /**
+   * @description 更新文章状态
+   */
+  async updateStatus(id: string, status: ArticleStatus) {
+    return (
+      ((
+        await this.articleRepository.update(id, {
+          status,
+        })
+      ).affected ?? 0) > 0
+    );
   }
 }

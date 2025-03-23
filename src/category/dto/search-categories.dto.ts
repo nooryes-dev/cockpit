@@ -30,4 +30,10 @@ export class SearchedCategoryDto {
     type: 'string',
   })
   name: string;
+
+  @ApiProperty({
+    description: '技术栈name',
+    type: 'string',
+  })
+  techStackName: string;
 }

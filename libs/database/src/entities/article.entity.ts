@@ -11,6 +11,11 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Category } from './category.entity';
 
+export enum ArticleStatus {
+  Withdrawn = 'withdrawn',
+  Published = 'published',
+}
+
 @ApiSchema({ description: '文章' })
 @Entity({
   name: 'article',
@@ -72,9 +77,23 @@ export class Article extends _PresetDate {
   })
   category: Category;
 
+  @Column({
+    type: 'enum',
+    enum: ArticleStatus,
+    default: ArticleStatus.Published,
+  })
+  status: ArticleStatus;
+
   @BeforeInsert()
   private syncUpdatedBy() {
     if (!!this.updatedById) return;
     this.updatedById = this.createdById;
+  }
+
+  /**
+   * @description 文章有效的状态
+   */
+  static get validStatuses() {
+    return [ArticleStatus.Published];
   }
 }

@@ -25,7 +25,10 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { User } from '@/libs/database';
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
-import { Article } from '@/libs/database/entities/article.entity';
+import {
+  Article,
+  ArticleStatus,
+} from '@/libs/database/entities/article.entity';
 import { QueryArticlesDto } from './dto/query-articles.dto';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 import {
@@ -104,5 +107,19 @@ export class ArticleController {
   @Get(':id')
   article(@Param('id') id: string) {
     return this.articleService.article(id);
+  }
+
+  @ApiOperation({ summary: '发布文章' })
+  @ApiUnifiedResponse(Article)
+  @Patch('publish/:id')
+  publish(@Param('id') id: string) {
+    return this.articleService.updateStatus(id, ArticleStatus.Published);
+  }
+
+  @ApiOperation({ summary: '撤回文章' })
+  @ApiUnifiedResponse(Article)
+  @Patch('withdraw/:id')
+  withdraw(@Param('id') id: string) {
+    return this.articleService.updateStatus(id, ArticleStatus.Withdrawn);
   }
 }
