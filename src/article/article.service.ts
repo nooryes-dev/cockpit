@@ -132,6 +132,12 @@ export class ArticleService {
       .where('article.status IN (:...articleStatuses)', {
         articleStatuses: Article.validStatuses,
       })
+      .leftJoinAndMapOne('article.category', 'article.category', 'category')
+      .leftJoinAndMapOne(
+        'category.techStack',
+        'category.techStack',
+        'techStack',
+      )
       .orderBy('article.id')
       .offset((page - 1) * pageSize)
       .limit(pageSize);
@@ -153,6 +159,8 @@ export class ArticleService {
           title: _article.title,
           content: _article.content,
           categoryCode: _article.categoryCode,
+          categoryName: _article.category.name,
+          techStackCode: _article.category.techStack.code,
         };
       }),
       count,
@@ -170,6 +178,12 @@ export class ArticleService {
         .where('article.status IN (:...articleStatuses)', {
           articleStatuses: Article.validStatuses,
         })
+        .leftJoinAndMapOne('article.category', 'article.category', 'category')
+        .leftJoinAndMapOne(
+          'category.techStack',
+          'category.techStack',
+          'techStack',
+        )
         .limit(10)
         .orderBy({
           'article.updatedAt': 'DESC',
@@ -181,6 +195,8 @@ export class ArticleService {
         title: _article.title,
         content: _article.content,
         categoryCode: _article.categoryCode,
+        categoryName: _article.category.name,
+        techStackCode: _article.category.techStack.code,
       };
     });
   }

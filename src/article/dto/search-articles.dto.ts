@@ -39,4 +39,14 @@ export class SearchedArticleDto {
     description: '分类code',
   })
   categoryCode: string;
+
+  @ApiProperty({
+    description: '分类名称',
+  })
+  categoryName: string;
+
+  @ApiProperty({
+    description: '技术栈code',
+  })
+  techStackCode: string;
 }
