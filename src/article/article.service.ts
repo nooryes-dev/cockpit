@@ -126,6 +126,7 @@ export class ArticleService {
     keyword,
     page = 1,
     pageSize = 10,
+    sequence = 'ASC',
   }: SearchArticlesDto) {
     const qb = this.articleRepository
       .createQueryBuilder('article')
@@ -138,7 +139,7 @@ export class ArticleService {
         'category.techStack',
         'techStack',
       )
-      .orderBy('article.id')
+      .orderBy('article.updatedAt', sequence)
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 

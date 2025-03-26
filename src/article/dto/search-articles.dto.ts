@@ -16,6 +16,13 @@ export class SearchArticlesDto extends Pagination {
     type: 'string',
   })
   keyword?: string;
+
+  @ApiProperty({
+    description: '排序',
+    required: false,
+    type: 'string',
+  })
+  sequence?: 'ASC' | 'DESC';
 }
 
 @ApiSchema({ description: '搜索展示的知识点实体' })
