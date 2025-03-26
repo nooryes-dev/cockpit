@@ -18,6 +18,13 @@ export class SearchArticlesDto extends Pagination {
   keyword?: string;
 
   @ApiProperty({
+    description: '返回数据中是否包含content字段',
+    required: false,
+    type: 'string',
+  })
+  hasContent?: 'y' | 'n';
+
+  @ApiProperty({
     description: '排序',
     required: false,
     type: 'string',
@@ -40,7 +47,7 @@ export class SearchedArticleDto {
   @ApiProperty({
     description: '知识点内容',
   })
-  content: string;
+  content?: string;
 
   @ApiProperty({
     description: '分类code',

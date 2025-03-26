@@ -68,6 +68,7 @@ export class ArticleService {
       .where('1 = 1')
       .orderBy('article.id')
       .offset((page - 1) * pageSize)
+      .orderBy('article.updatedAt', 'DESC')
       .limit(pageSize);
 
     if (!!categoryCode) {
@@ -126,8 +127,14 @@ export class ArticleService {
     keyword,
     page = 1,
     pageSize = 10,
+    hasContent = 'y',
     sequence = 'ASC',
   }: SearchArticlesDto) {
+    // 如果没有传入categoryCode，那么pageSize最多为20
+    if (!categoryCode) {
+      pageSize = Math.min(pageSize, 20);
+    }
+
     const qb = this.articleRepository
       .createQueryBuilder('article')
       .where('article.status IN (:...articleStatuses)', {
@@ -152,13 +159,12 @@ export class ArticleService {
     }
 
     const [_articles, count] = await qb.getManyAndCount();
-
     return [
       _articles.map<SearchedArticleDto>((_article) => {
         return {
           id: _article.id,
           title: _article.title,
-          content: _article.content,
+          content: hasContent === 'y' ? _article.content : undefined,
           categoryCode: _article.categoryCode,
           categoryName: _article.category.name,
           techStackCode: _article.category.techStack.code,
