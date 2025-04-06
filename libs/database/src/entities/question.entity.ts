@@ -11,7 +11,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Category } from './category.entity';
 
-@ApiSchema({ description: '问题' })
+@ApiSchema({ description: '问题点' })
 @Entity({
   name: 'question',
 })

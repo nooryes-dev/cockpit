@@ -16,7 +16,7 @@ export enum ArticleStatus {
   Published = 'published',
 }
 
-@ApiSchema({ description: '文章' })
+@ApiSchema({ description: '知识点' })
 @Entity({
   name: 'article',
 })
@@ -25,14 +25,14 @@ export class Article extends _PresetDate {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({ description: '文章标题' })
+  @ApiProperty({ description: '知识点标题' })
   @Column({
     type: 'varchar',
     length: 50,
   })
   title: string;
 
-  @ApiProperty({ description: '文章正文' })
+  @ApiProperty({ description: '知识点正文' })
   @Column({
     type: 'longtext',
   })
@@ -91,7 +91,7 @@ export class Article extends _PresetDate {
   }
 
   /**
-   * @description 文章有效的状态
+   * @description 知识点有效的状态
    */
   static get validStatuses() {
     return [ArticleStatus.Published];

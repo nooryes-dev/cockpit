@@ -14,6 +14,10 @@ import {
   SearchArticlesDto,
   SearchedArticleDto,
 } from './dto/search-articles.dto';
+import {
+  CountByCategoryDto,
+  CountedByCategoryDto,
+} from './dto/count-by-category.dto';
 
 @Injectable()
 export class ArticleService {
@@ -24,7 +28,7 @@ export class ArticleService {
   ) {}
 
   /**
-   * @description 创建文章
+   * @description 创建知识点
    */
   async create(createArticleDto: CreateArticleDto, createdBy: User) {
     return (
@@ -40,7 +44,7 @@ export class ArticleService {
   }
 
   /**
-   * @description 更新文章
+   * @description 更新知识点
    */
   async update(id: string, updateArticleDto: UpdateArticleDto, user: User) {
     return (
@@ -57,7 +61,7 @@ export class ArticleService {
   }
 
   /**
-   * @description 分页获取文章列表
+   * @description 分页获取知识点列表
    * 接口用于管理端页面：
    * 1. 不需要过滤状态
    */
@@ -91,7 +95,7 @@ export class ArticleService {
   }
 
   /**
-   * @description 查询文章详情
+   * @description 查询知识点详情
    */
   article(id: string) {
     return this.articleRepository.findOne({
@@ -105,7 +109,7 @@ export class ArticleService {
   }
 
   /**
-   * @description 删除文章
+   * @description 删除知识点
    */
   async remove(id: string, user: User) {
     return (
@@ -119,8 +123,8 @@ export class ArticleService {
   }
 
   /**
-   * @description C端搜索文章
-   * 1. 过滤文章状态在有效范围内
+   * @description C端搜索知识点
+   * 1. 过滤知识点状态在有效范围内
    */
   async search({
     categoryCode,
@@ -176,7 +180,7 @@ export class ArticleService {
 
   /**
    * @description 查询热门的知识点
-   * 1. 过滤文章状态在有效范围内
+   * 1. 过滤知识点状态在有效范围内
    */
   async hot() {
     return (
@@ -209,7 +213,7 @@ export class ArticleService {
   }
 
   /**
-   * @description 更新文章状态
+   * @description 更新知识点状态
    */
   async updateStatus(id: string, status: ArticleStatus, updatedById: number) {
     return (
@@ -220,5 +224,26 @@ export class ArticleService {
         })
       ).affected ?? 0) > 0
     );
+  }
+
+  /**
+   * @description 按分类统计知识点数量
+   */
+  async countByCategory({ techStackCode }: CountByCategoryDto) {
+    const qb = this.articleRepository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.category', 'category')
+      .select('article.categoryCode', 'categoryCode')
+      .addSelect('category.name', 'categoryName')
+      .addSelect('COUNT(*)', 'total')
+      .where('1 = 1')
+      .groupBy('article.categoryCode')
+      .orderBy('total', 'DESC');
+
+    if (techStackCode) {
+      qb.andWhere('category.techStackCode = :techStackCode', { techStackCode });
+    }
+
+    return await qb.getRawMany<CountedByCategoryDto>();
   }
 }

@@ -2,7 +2,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { Pagination } from 'typings/pagination.types';
 
 @ApiSchema({
-  name: '分页查询文章列表',
+  name: '分页查询知识点列表',
 })
 export class QueryArticlesDto extends Pagination {
   @ApiProperty({
@@ -13,7 +13,7 @@ export class QueryArticlesDto extends Pagination {
   categoryCode?: string;
 
   @ApiProperty({
-    description: '文章关键字',
+    description: '知识点关键字',
     required: false,
     type: 'string',
   })

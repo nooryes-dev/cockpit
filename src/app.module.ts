@@ -36,9 +36,9 @@ import { QuestionModule } from './question/question.module';
     TechStackModule,
     // 分类模块
     CategoryModule,
-    // 文章模块
+    // 知识点模块
     ArticleModule,
-    // 问题模块
+    // 问题点模块
     QuestionModule,
   ],
 })

@@ -2,7 +2,7 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { Pagination } from 'typings/pagination.types';
 
 @ApiSchema({
-  name: '分页查询问题列表',
+  name: '分页查询问题点列表',
 })
 export class QueryQuestionsDto extends Pagination {
   @ApiProperty({
