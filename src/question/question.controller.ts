@@ -18,6 +18,7 @@ import {
   ApiExtraModels,
   ApiOperation,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -27,18 +28,26 @@ import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginate
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
 import { Question } from '@/libs/database/entities/question.entity';
 import { QueryQuestionsDto } from './dto/query-questions.dto';
+import {
+  SearchedQuestionDto,
+  SearchQuestionsDto,
+} from './dto/search-questions.dto';
+import {
+  CountByCategoryDto,
+  CountedByCategoryDto,
+} from './dto/count-by-category.dto';
 
-@ApiTags('问题')
+@ApiTags('问题点')
 @ApiExtraModels(Question)
 @Controller('question')
 export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '创建问题' })
+  @ApiOperation({ summary: '创建问题点' })
   @ApiUnifiedResponse({
     type: 'number',
-    description: '问题id',
+    description: '问题点id',
   })
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -47,7 +56,7 @@ export class QuestionController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '更新问题' })
+  @ApiOperation({ summary: '更新问题点' })
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
@@ -60,7 +69,7 @@ export class QuestionController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '删除问题' })
+  @ApiOperation({ summary: '删除问题点' })
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
@@ -68,7 +77,7 @@ export class QuestionController {
     return this.questionService.remove(id, user);
   }
 
-  @ApiOperation({ summary: '分页获取问题列表' })
+  @ApiOperation({ summary: '分页获取问题点列表' })
   @ApiUnifiedPaginatedResponse(Question)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('list')
@@ -76,7 +85,35 @@ export class QuestionController {
     return this.questionService.questions(queryCategoriesDto);
   }
 
-  @ApiOperation({ summary: '获取问题详情' })
+  @ApiOperation({ summary: 'C端页面模糊搜索问题点' })
+  @ApiUnifiedPaginatedResponse(SearchQuestionsDto)
+  @UseInterceptors(PaginatedResponseInterceptor)
+  @Get('search')
+  search(@Query() searchQuestionsDto: SearchQuestionsDto) {
+    return this.questionService.search(searchQuestionsDto);
+  }
+
+  @ApiOperation({ summary: '热门问题点' })
+  @ApiUnifiedResponse({
+    type: 'array',
+    items: { $ref: getSchemaPath(SearchedQuestionDto) },
+  })
+  @Get('hot')
+  hot() {
+    return this.questionService.hot();
+  }
+
+  @ApiOperation({ summary: '统计各分类问题点数量' })
+  @ApiUnifiedResponse({
+    type: 'array',
+    items: { $ref: getSchemaPath(CountedByCategoryDto) },
+  })
+  @Get('count-by-category')
+  countByCategory(@Query() countByCategoryDto: CountByCategoryDto) {
+    return this.questionService.countByCategory(countByCategoryDto);
+  }
+
+  @ApiOperation({ summary: '获取问题点详情' })
   @ApiUnifiedResponse(Question)
   @Get(':id')
   question(@Param('id') id: string) {

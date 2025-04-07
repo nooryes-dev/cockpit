@@ -35,18 +35,22 @@ import {
   SearchArticlesDto,
   SearchedArticleDto,
 } from './dto/search-articles.dto';
+import {
+  CountByCategoryDto,
+  CountedByCategoryDto,
+} from './dto/count-by-category.dto';
 
-@ApiTags('文章')
-@ApiExtraModels(Article, SearchedArticleDto)
+@ApiTags('知识点')
+@ApiExtraModels(Article, SearchedArticleDto, CountedByCategoryDto)
 @Controller('article')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '创建文章' })
+  @ApiOperation({ summary: '创建知识点' })
   @ApiUnifiedResponse({
     type: 'number',
-    description: '文章id',
+    description: '知识点id',
   })
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -55,7 +59,7 @@ export class ArticleController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '更新文章' })
+  @ApiOperation({ summary: '更新知识点' })
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
@@ -68,7 +72,7 @@ export class ArticleController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '删除文章' })
+  @ApiOperation({ summary: '删除知识点' })
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
@@ -76,7 +80,7 @@ export class ArticleController {
     return this.articleService.remove(id, user);
   }
 
-  @ApiOperation({ summary: '分页获取文章列表' })
+  @ApiOperation({ summary: '分页获取知识点列表' })
   @ApiUnifiedPaginatedResponse(Article)
   @UseInterceptors(PaginatedResponseInterceptor)
   @Get('list')
@@ -102,14 +106,24 @@ export class ArticleController {
     return this.articleService.hot();
   }
 
-  @ApiOperation({ summary: '获取文章详情' })
+  @ApiOperation({ summary: '统计各分类知识点数量' })
+  @ApiUnifiedResponse({
+    type: 'array',
+    items: { $ref: getSchemaPath(CountedByCategoryDto) },
+  })
+  @Get('count-by-category')
+  countByCategory(@Query() countByCategoryDto: CountByCategoryDto) {
+    return this.articleService.countByCategory(countByCategoryDto);
+  }
+
+  @ApiOperation({ summary: '获取知识点详情' })
   @ApiUnifiedResponse(Article)
   @Get(':id')
   article(@Param('id') id: string) {
     return this.articleService.article(id);
   }
 
-  @ApiOperation({ summary: '发布文章' })
+  @ApiOperation({ summary: '发布知识点' })
   @ApiBearerAuth()
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
@@ -122,7 +136,7 @@ export class ArticleController {
     );
   }
 
-  @ApiOperation({ summary: '撤回文章' })
+  @ApiOperation({ summary: '撤回知识点' })
   @ApiBearerAuth()
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
