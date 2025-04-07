@@ -149,6 +149,7 @@ export class CategoryService {
       .select('category.code', 'code')
       .addSelect('category.name', 'name')
       .addSelect('techStack.name', 'techStackName')
+      .addSelect('techStack.code', 'techStackCode')
       .where('1 = 1');
 
     if (!!keyword) {
@@ -168,15 +169,18 @@ export class CategoryService {
     }
 
     return (
-      await qb
-        .skip(0)
-        .take(50)
-        .getRawMany<SearchedCategoryDto & { techStackName: string }>()
-    ).map(({ code, name, techStackName }) => {
+      await qb.skip(0).take(50).getRawMany<
+        SearchedCategoryDto & {
+          techStackName: string;
+          techStackCode: string;
+        }
+      >()
+    ).map(({ code, name, techStackName, techStackCode }) => {
       return {
         code,
         name,
         techStackName,
+        techStackCode,
       };
     });
   }
