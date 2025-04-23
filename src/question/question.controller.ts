@@ -33,12 +33,12 @@ import {
   SearchQuestionsDto,
 } from './dto/search-questions.dto';
 import {
-  CountByCategoryDto,
-  CountedByCategoryDto,
-} from './dto/count-by-category.dto';
+  CountByTechStackCodeDto,
+  CountedByTechStackCodeDto,
+} from './dto/count-by-tech-stack.dto';
 
 @ApiTags('问题点')
-@ApiExtraModels(Question)
+@ApiExtraModels(Question, SearchedQuestionDto, CountedByTechStackCodeDto)
 @Controller('question')
 export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}
@@ -103,14 +103,13 @@ export class QuestionController {
     return this.questionService.hot();
   }
 
-  @ApiOperation({ summary: '统计各分类问题点数量' })
-  @ApiUnifiedResponse({
-    type: 'array',
-    items: { $ref: getSchemaPath(CountedByCategoryDto) },
-  })
-  @Get('count-by-category')
-  countByCategory(@Query() countByCategoryDto: CountByCategoryDto) {
-    return this.questionService.countByCategory(countByCategoryDto);
+  @ApiOperation({ summary: '统计各技术栈问题点数量' })
+  @ApiUnifiedResponse(CountedByTechStackCodeDto)
+  @Get('count-by-tech-stack')
+  countByTechStackCode(
+    @Query() countByTechStackCodeDto: CountByTechStackCodeDto,
+  ) {
+    return this.questionService.countByTechStackCode(countByTechStackCodeDto);
   }
 
   @ApiOperation({ summary: '获取问题点详情' })

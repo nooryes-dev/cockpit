@@ -15,9 +15,9 @@ import {
   SearchedArticleDto,
 } from './dto/search-articles.dto';
 import {
-  CountByCategoryDto,
-  CountedByCategoryDto,
-} from './dto/count-by-category.dto';
+  CountByTechStackCodeDto,
+  CountedByTechStackCodeDto,
+} from './dto/count-by-tech-stack.dto';
 
 @Injectable()
 export class ArticleService {
@@ -227,23 +227,19 @@ export class ArticleService {
   }
 
   /**
-   * @description 按分类统计知识点数量
+   * @description 按技术栈统计知识点数量
    */
-  async countByCategory({ techStackCode }: CountByCategoryDto) {
+  async countByTechStackCode({ techStackCode }: CountByTechStackCodeDto) {
     const qb = this.articleRepository
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.category', 'category')
-      .select('article.categoryCode', 'categoryCode')
-      .addSelect('category.name', 'categoryName')
-      .addSelect('COUNT(*)', 'total')
-      .where('1 = 1')
-      .groupBy('article.categoryCode')
-      .orderBy('total', 'DESC');
+      .select('COUNT(*)', 'total')
+      .where('1 = 1');
 
     if (techStackCode) {
       qb.andWhere('category.techStackCode = :techStackCode', { techStackCode });
     }
 
-    return await qb.getRawMany<CountedByCategoryDto>();
+    return await qb.getRawOne<CountedByTechStackCodeDto>();
   }
 }

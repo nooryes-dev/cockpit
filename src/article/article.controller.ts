@@ -36,12 +36,12 @@ import {
   SearchedArticleDto,
 } from './dto/search-articles.dto';
 import {
-  CountByCategoryDto,
-  CountedByCategoryDto,
-} from './dto/count-by-category.dto';
+  CountByTechStackCodeDto,
+  CountedByTechStackCodeDto,
+} from './dto/count-by-tech-stack.dto';
 
 @ApiTags('知识点')
-@ApiExtraModels(Article, SearchedArticleDto, CountedByCategoryDto)
+@ApiExtraModels(Article, SearchedArticleDto, CountedByTechStackCodeDto)
 @Controller('article')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
@@ -106,14 +106,13 @@ export class ArticleController {
     return this.articleService.hot();
   }
 
-  @ApiOperation({ summary: '统计各分类知识点数量' })
-  @ApiUnifiedResponse({
-    type: 'array',
-    items: { $ref: getSchemaPath(CountedByCategoryDto) },
-  })
-  @Get('count-by-category')
-  countByCategory(@Query() countByCategoryDto: CountByCategoryDto) {
-    return this.articleService.countByCategory(countByCategoryDto);
+  @ApiOperation({ summary: '统计各技术栈知识点数量' })
+  @ApiUnifiedResponse(CountedByTechStackCodeDto)
+  @Get('count-by-tech-stack')
+  countByTechStackCode(
+    @Query() countByTechStackCodeDto: CountByTechStackCodeDto,
+  ) {
+    return this.articleService.countByTechStackCode(countByTechStackCodeDto);
   }
 
   @ApiOperation({ summary: '获取知识点详情' })
