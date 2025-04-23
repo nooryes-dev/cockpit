@@ -6,7 +6,10 @@ import { User } from '@/libs/database';
 import { QueryQuestionsDto } from './dto/query-questions.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Question } from '@/libs/database/entities/question.entity';
+import {
+  Question,
+  QuestionStatus,
+} from '@/libs/database/entities/question.entity';
 import {
   SearchedQuestionDto,
   SearchQuestionsDto,
@@ -134,7 +137,9 @@ export class QuestionService {
         'category.techStack',
         'techStack',
       )
-      .where('1 = 1')
+      .where('question.status IN (:...questionStatuses)', {
+        questionStatuses: Question.validStatuses,
+      })
       .orderBy('question.updatedAt', sequence)
       .offset((page - 1) * pageSize)
       .limit(pageSize);
@@ -171,7 +176,9 @@ export class QuestionService {
     return (
       await this.questionRepository
         .createQueryBuilder('question')
-        .where('1 = 1')
+        .where('question.status IN (:...questionStatuses)', {
+          questionStatuses: Question.validStatuses,
+        })
         .leftJoinAndMapOne('question.category', 'question.category', 'category')
         .leftJoinAndMapOne(
           'category.techStack',
@@ -210,5 +217,19 @@ export class QuestionService {
     }
 
     return await qb.getRawOne<CountedByTechStackCodeDto>();
+  }
+
+  /**
+   * @description 更新问题点状态
+   */
+  async updateStatus(id: string, status: QuestionStatus, updatedById: number) {
+    return (
+      ((
+        await this.questionRepository.update(id, {
+          status,
+          updatedById,
+        })
+      ).affected ?? 0) > 0
+    );
   }
 }

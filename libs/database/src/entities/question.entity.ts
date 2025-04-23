@@ -11,6 +11,11 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Category } from './category.entity';
 
+export enum QuestionStatus {
+  Withdrawn = 'withdrawn',
+  Published = 'published',
+}
+
 @ApiSchema({ description: '问题点' })
 @Entity({
   name: 'question',
@@ -71,9 +76,24 @@ export class Question extends _PresetDate {
   })
   category: Category;
 
+  @ApiProperty({ description: '状态', enum: QuestionStatus })
+  @Column({
+    type: 'enum',
+    enum: QuestionStatus,
+    default: QuestionStatus.Published,
+  })
+  status: QuestionStatus;
+
   @BeforeInsert()
   private syncUpdatedBy() {
     if (!!this.updatedById) return;
     this.updatedById = this.createdById;
+  }
+
+  /**
+   * @description 问题点有效的状态
+   */
+  static get validStatuses() {
+    return [QuestionStatus.Published];
   }
 }

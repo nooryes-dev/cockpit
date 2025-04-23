@@ -26,7 +26,10 @@ import { WhoAmI } from 'src/decorators/who-am-i.decorator';
 import { User } from '@/libs/database';
 import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
 import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
-import { Question } from '@/libs/database/entities/question.entity';
+import {
+  Question,
+  QuestionStatus,
+} from '@/libs/database/entities/question.entity';
 import { QueryQuestionsDto } from './dto/query-questions.dto';
 import {
   SearchedQuestionDto,
@@ -117,5 +120,31 @@ export class QuestionController {
   @Get(':id')
   question(@Param('id') id: string) {
     return this.questionService.question(id);
+  }
+
+  @ApiOperation({ summary: '发布问题点' })
+  @ApiBearerAuth()
+  @ApiUnifiedResponse({ type: 'boolean' })
+  @UseGuards(JwtAuthGuard)
+  @Patch('publish/:id')
+  publish(@Param('id') id: string, @WhoAmI() user: User) {
+    return this.questionService.updateStatus(
+      id,
+      QuestionStatus.Published,
+      user.id,
+    );
+  }
+
+  @ApiOperation({ summary: '撤回问题点' })
+  @ApiBearerAuth()
+  @ApiUnifiedResponse({ type: 'boolean' })
+  @UseGuards(JwtAuthGuard)
+  @Patch('withdraw/:id')
+  withdraw(@Param('id') id: string, @WhoAmI() user: User) {
+    return this.questionService.updateStatus(
+      id,
+      QuestionStatus.Withdrawn,
+      user.id,
+    );
   }
 }
