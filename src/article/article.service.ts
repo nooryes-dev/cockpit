@@ -234,7 +234,9 @@ export class ArticleService {
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.category', 'category')
       .select('COUNT(*)', 'total')
-      .where('1 = 1');
+      .where('article.status IN (:...articleStatuses)', {
+        articleStatuses: Article.validStatuses,
+      });
 
     if (techStackCode) {
       qb.andWhere('category.techStackCode = :techStackCode', { techStackCode });

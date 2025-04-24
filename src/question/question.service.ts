@@ -210,7 +210,9 @@ export class QuestionService {
       .createQueryBuilder('question')
       .leftJoinAndSelect('question.category', 'category')
       .select('COUNT(*)', 'total')
-      .where('1 = 1');
+      .where('question.status IN (:...questionStatuses)', {
+        questionStatuses: Question.validStatuses,
+      });
 
     if (techStackCode) {
       qb.andWhere('category.techStackCode = :techStackCode', { techStackCode });
