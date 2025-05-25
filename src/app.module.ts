@@ -9,6 +9,7 @@ import { TechStackModule } from './tech-stack/tech-stack.module';
 import { CategoryModule } from './category/category.module';
 import { ArticleModule } from './article/article.module';
 import { QuestionModule } from './question/question.module';
+import { ExamModule } from './exam/exam.module';
 
 @Module({
   imports: [
@@ -40,6 +41,8 @@ import { QuestionModule } from './question/question.module';
     ArticleModule,
     // 问题点模块
     QuestionModule,
+    // 考试模块
+    ExamModule,
   ],
 })
 export class AppModule {}

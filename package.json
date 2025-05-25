@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "@aiszlab/relax": "^1.5.7",
+    "@langchain/community": "^0.3.44",
+    "@langchain/core": "^0.3.57",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
