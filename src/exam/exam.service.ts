@@ -4,21 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Exam } from '@/libs/database/entities/exam.entity';
 import { Repository } from 'typeorm';
 import { ChatAlibabaTongyi } from '@langchain/community/chat_models/alibaba_tongyi';
-import {
-  ChatPromptTemplate,
-  SystemMessagePromptTemplate,
-} from '@langchain/core/prompts';
-import { Observable } from 'rxjs';
+import { concatMap, filter, map, Observable, of, scan } from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
-import { useQuestionsPrompt } from './prompts/question.prompt';
+import { SPEARATOR, useQuestionsPrompt } from './prompts/question.prompt';
 
 @Injectable()
 export class ExamService {
   #robot: ChatAlibabaTongyi;
-  #positionPrompt = ChatPromptTemplate.fromMessages([
-    '你现在是一个行业专家，用户输入一个职位名称，你需要将这个职位名称标准化为一个通用的职位名称。',
-    SystemMessagePromptTemplate.fromTemplate('输入的职位名称是{positionName}'),
-  ]);
 
   constructor(
     @InjectRepository(Exam)
@@ -42,7 +34,7 @@ export class ExamService {
    * 3. 服务端记录当前考试的内容，并生成一条历史记录
    */
   create(createExamDto: CreateExamDto) {
-    return new Observable<MessageEvent>((observer) => {
+    const _creator = new Observable<string>((observer) => {
       Promise.all([
         this.examRepository.save(this.examRepository.create()),
         usePositionPrompt(createExamDto.position)
@@ -52,9 +44,7 @@ export class ExamService {
       ])
         .then(({ 1: _prompt }) => {
           for (const chunk in this.#robot.stream(_prompt)) {
-            observer.next({
-              data: chunk,
-            });
+            observer.next(chunk);
           }
         })
         .catch((error) => {
@@ -64,5 +54,33 @@ export class ExamService {
           observer.complete();
         });
     });
+
+    return _creator.pipe(
+      scan<string, { question: string[]; chunks: string }>(
+        (prev, chunk) => {
+          if (!chunk.includes(SPEARATOR)) {
+            return { question: [], chunks: prev.chunks + chunk };
+          }
+
+          const _questions = chunk.split(SPEARATOR);
+          return {
+            question: [
+              _questions.at(0) + prev.chunks,
+              ..._questions.slice(1, -1),
+            ],
+            chunks: _questions.at(-1) ?? '',
+          };
+        },
+        {
+          question: [],
+          chunks: '',
+        },
+      ),
+      filter(({ question }) => question.length > 0),
+      concatMap(({ question }) => of(...question)),
+      map<string, MessageEvent>((question) => ({
+        data: question,
+      })),
+    );
   }
 }
