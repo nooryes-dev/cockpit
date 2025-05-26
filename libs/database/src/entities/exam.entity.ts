@@ -7,6 +7,12 @@ import { _Preset } from './_preset.entity';
   name: 'exam',
 })
 export class Exam extends _Preset {
+  @ApiProperty({ description: '职位' })
+  @Column({
+    type: 'varchar',
+  })
+  position: string;
+
   @ApiProperty({ description: '问题' })
   @Column({
     type: 'varchar',

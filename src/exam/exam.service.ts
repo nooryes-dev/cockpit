@@ -22,27 +22,36 @@ export class ExamService {
   }
 
   /**
-   * 正在创建的考试
+   * 创建考试
+   * @description
+   * 用户会输入需要创建考试的职位，利用大模型标准化职位名称
    */
-  _exams: Map<number, any> = new Map();
+  async create(createExamDto: CreateExamDto) {
+    const position = await usePositionPrompt(createExamDto.position)
+      .then((_prompt) => this.#robot.invoke(_prompt))
+      .then(({ content }) => content.toString());
+
+    const _exam = await this.examRepository.save(
+      this.examRepository.create({ position }),
+    );
+
+    return _exam;
+  }
 
   /**
-   * 创建考试
-   * @description 用户在前端页面创建异常考试
-   * 1. 用户会输入需要创建考试的职位，利用大模型标准化职位名称
-   * 2. 大模型根据标准化的职位，创建开始题目
-   * 3. 服务端记录当前考试的内容，并生成一条历史记录
+   * 生成考试内容
+   * @description
+   * 根据已经落库的条目。生成对应的问题
    */
-  create(createExamDto: CreateExamDto) {
+  generate(id: number) {
     const _creator = new Observable<string>((observer) => {
-      Promise.all([
-        this.examRepository.save(this.examRepository.create()),
-        usePositionPrompt(createExamDto.position)
-          .then((_prompt) => this.#robot.invoke(_prompt))
-          .then(({ content }) => content.toString())
-          .then((_position) => useQuestionsPrompt(_position)),
-      ])
-        .then(({ 1: _prompt }) => {
+      this.examRepository
+        .findOneBy({ id })
+        .then((exam) => {
+          if (!exam) throw new Error('考试不存在');
+          return useQuestionsPrompt(exam.position);
+        })
+        .then((_prompt) => {
           for (const chunk in this.#robot.stream(_prompt)) {
             observer.next(chunk);
           }
