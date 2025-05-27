@@ -20,6 +20,8 @@ import { type UpdateExamDto } from './dto/submit-exam.dto';
 import { SPEARATOR } from './constants';
 import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
 import { isEmpty } from '@aiszlab/relax';
+import { operate } from 'rxjs/internal/util/lift';
+import { createOperatorSubscriber } from 'rxjs/internal/operators/OperatorSubscriber';
 
 @Injectable()
 export class ExamService {
@@ -68,13 +70,13 @@ export class ExamService {
             if (!_exam) throw new Error('考试不存在');
 
             if (!isQuestionsGenerable(_exam.status)) {
-              observer.next(_exam.questions);
-              throw new Error('状态不允许');
+              observer.next(_exam.questions ?? '');
+              return;
             }
 
             const _prompt = await useQuestionsPrompt(_exam.position);
-            for (const chunk in await this.#robot.stream(_prompt)) {
-              observer.next(chunk);
+            for await (const chunk of await this.#robot.stream(_prompt)) {
+              observer.next(chunk.content.toString());
             }
           })
           .catch((error) => {
@@ -108,16 +110,15 @@ export class ExamService {
     return _questions$.pipe(
       scan<string, Questioning>(
         (prev, chunk) => {
-          if (!chunk.includes(SPEARATOR)) {
-            return { questions: [], chunk: prev.chunk + chunk };
+          const _chunk = prev.chunk + chunk;
+
+          if (!_chunk.includes(SPEARATOR)) {
+            return { questions: [], chunk: _chunk };
           }
 
-          const _questions = chunk.split(SPEARATOR);
+          const _questions = _chunk.split(SPEARATOR);
           return {
-            questions: [
-              _questions.at(0) + prev.chunk,
-              ..._questions.slice(1, -1),
-            ],
+            questions: _questions.slice(0, -1),
             chunk: _questions.at(-1) ?? '',
           };
         },
@@ -126,6 +127,27 @@ export class ExamService {
           chunk: '',
         },
       ),
+      operate<Questioning, Questioning>((source, subscriber) => {
+        let buffer: Questioning[] | null = [];
+        source.subscribe(
+          createOperatorSubscriber(
+            subscriber,
+            (value) => {
+              buffer?.push(value);
+              subscriber.next(value);
+            },
+            () => {
+              const _last = buffer?.at(-1);
+              subscriber.next({ questions: [_last?.chunk ?? ''], chunk: '' });
+              subscriber.complete();
+            },
+            undefined,
+            () => {
+              buffer = null;
+            },
+          ),
+        );
+      }),
       filter(({ questions }) => !isEmpty(questions)),
       concatMap(({ questions }) => of(...questions)),
       filter((question) => !isEmpty(question)),
@@ -168,8 +190,8 @@ export class ExamService {
           }
 
           const _prompt = await useReviewPrompt();
-          for (const chunk in await this.#robot.stream(_prompt)) {
-            observer.next(chunk);
+          for await (const chunk of await this.#robot.stream(_prompt)) {
+            observer.next(chunk.content.toString());
           }
         })
         .catch((error) => {

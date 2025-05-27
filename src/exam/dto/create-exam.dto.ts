@@ -5,7 +5,6 @@ export class CreateExamDto {
   @ApiProperty({
     description: '职位名称',
     type: String,
-    required: true,
   })
   position: string;
 }

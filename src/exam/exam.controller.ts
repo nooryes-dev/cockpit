@@ -2,16 +2,14 @@ import {
   Controller,
   Body,
   Sse,
-  MessageEvent,
   Post,
   Param,
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
-import { type CreateExamDto } from './dto/create-exam.dto';
-import { type Observable } from 'rxjs';
-import { type UpdateExamDto } from './dto/submit-exam.dto';
+import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/submit-exam.dto';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -22,14 +20,14 @@ import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorato
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Exam } from '@/libs/database/entities/exam.entity';
 
-@ApiTags('考试')
+@ApiTags('面试间')
 @ApiExtraModels(Exam)
-@Controller('exam')
+@Controller('interview-room')
 export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '创建考试' })
+  @ApiOperation({ summary: '创建面试间' })
   @ApiUnifiedResponse(Exam)
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -38,17 +36,13 @@ export class ExamController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '生成考试问题' })
-  @UseGuards(JwtAuthGuard)
   @Sse('/questions/:id')
-  generateQuestions(
-    @Param('id', ParseIntPipe) id: number,
-  ): Observable<MessageEvent> {
+  generateQuestions(@Param('id', ParseIntPipe) id: number) {
     return this.examService.generateQuestions(id);
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '提交考试' })
+  @ApiOperation({ summary: '提交面试结果' })
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
   @Post('submit/:id')
@@ -60,7 +54,7 @@ export class ExamController {
   }
 
   @ApiBearerAuth()
-  @ApiOperation({ summary: '审查考试内容' })
+  @ApiOperation({ summary: '审查面试内容' })
   @UseGuards(JwtAuthGuard)
   @Sse('/review/:id')
   review(@Param('id', ParseIntPipe) id: number) {

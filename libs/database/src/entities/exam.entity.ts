@@ -21,26 +21,27 @@ export class Exam extends _Preset {
   @ApiProperty({ description: '职位' })
   @Column({
     type: 'varchar',
+    length: 20,
   })
   position: string;
 
   @ApiProperty({ description: '问题' })
   @Column({
-    type: 'varchar',
+    type: 'longtext',
     nullable: true,
   })
   questions: string | undefined;
 
   @ApiProperty({ description: '用户解答' })
   @Column({
-    type: 'varchar',
+    type: 'longtext',
     nullable: true,
   })
   answers: string | undefined;
 
   @ApiProperty({ description: '评论' })
   @Column({
-    type: 'varchar',
+    type: 'longtext',
     nullable: true,
   })
   comments: string | undefined;
