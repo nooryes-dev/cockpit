@@ -46,6 +46,6 @@ export type UnifiedResponse = SucceedResponse<unknown> | FailedResponse;
  * @description Completed Message Event
  */
 export const COMPLETED_MESSAGE_EVENT = (): MessageEvent => ({
-  data: '',
+  data: null as unknown as object,
   type: StatusCode.Success,
 });
