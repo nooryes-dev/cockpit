@@ -1,6 +1,11 @@
+import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+
+@ApiSchema({ description: '创建考试' })
 export class CreateExamDto {
-  /**
-   * 面试职位
-   */
+  @ApiProperty({
+    description: '职位名称',
+    type: String,
+    required: true,
+  })
   position: string;
 }

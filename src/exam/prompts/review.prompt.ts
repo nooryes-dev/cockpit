@@ -8,13 +8,11 @@ const template = ChatPromptTemplate.fromMessages([
   `每个面试问题希望通过${SPEARATOR}来分割`,
 ]);
 
-export const useQuestionsPrompt = (position: string) => {
-  return template.invoke({
-    position,
-  });
+export const useReviewPrompt = () => {
+  return template.invoke({});
 };
 
-export interface Questioning {
-  questions: string[];
-  chunk: string;
+export interface Reviewing {
+  isScored: boolean;
+  comments: string;
 }

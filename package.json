@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@aiszlab/relax": "^1.5.7",
+    "@aiszlab/relax": "^1.5.12",
     "@langchain/community": "^0.3.44",
     "@langchain/core": "^0.3.57",
     "@nestjs/common": "^10.0.0",

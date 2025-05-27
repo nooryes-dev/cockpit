@@ -1,16 +1,30 @@
 import { Injectable, MessageEvent } from '@nestjs/common';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Exam } from '@/libs/database/entities/exam.entity';
-import { Repository } from 'typeorm';
+import {
+  Exam,
+  ExamStatus,
+  isQuestionsGenerable,
+  isReviewable,
+  isSubmittable,
+} from '@/libs/database/entities/exam.entity';
+import { type Repository } from 'typeorm';
 import { ChatAlibabaTongyi } from '@langchain/community/chat_models/alibaba_tongyi';
-import { concatMap, filter, map, Observable, of, scan } from 'rxjs';
+import { concatMap, filter, map, Observable, of, reduce, scan } from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
-import { SPEARATOR, useQuestionsPrompt } from './prompts/question.prompt';
+import {
+  type Questioning,
+  useQuestionsPrompt,
+} from './prompts/question.prompt';
+import { type UpdateExamDto } from './dto/submit-exam.dto';
+import { SPEARATOR } from './constants';
+import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
+import { isEmpty } from '@aiszlab/relax';
 
 @Injectable()
 export class ExamService {
   #robot: ChatAlibabaTongyi;
+  #questions$: Map<number, Observable<string>>;
 
   constructor(
     @InjectRepository(Exam)
@@ -19,6 +33,7 @@ export class ExamService {
     this.#robot = new ChatAlibabaTongyi({
       model: 'qwen-plus',
     });
+    this.#questions$ = new Map();
   }
 
   /**
@@ -43,16 +58,117 @@ export class ExamService {
    * @description
    * 根据已经落库的条目。生成对应的问题
    */
-  generate(id: number) {
-    const _creator = new Observable<string>((observer) => {
+  generateQuestions(id: number) {
+    const _questions$ =
+      this.#questions$.get(id) ??
+      new Observable<string>((observer) => {
+        this.examRepository
+          .findOneBy({ id })
+          .then(async (_exam) => {
+            if (!_exam) throw new Error('考试不存在');
+
+            if (!isQuestionsGenerable(_exam.status)) {
+              observer.next(_exam.questions);
+              throw new Error('状态不允许');
+            }
+
+            const _prompt = await useQuestionsPrompt(_exam.position);
+            for (const chunk in await this.#robot.stream(_prompt)) {
+              observer.next(chunk);
+            }
+          })
+          .catch((error) => {
+            observer.error(error);
+          })
+          .finally(() => {
+            observer.complete();
+          });
+      });
+
+    // 缓存问题生成流，保证同一时间只有一个生成流
+    this.#questions$.set(id, _questions$);
+    _questions$.pipe(reduce((prev, chunk) => prev + chunk, '')).subscribe({
+      next: (questions) => {
+        this.examRepository.update(
+          { id, status: ExamStatus.Initialized },
+          {
+            questions,
+            status: ExamStatus.Draft,
+          },
+        );
+      },
+      complete: () => {
+        this.#questions$.delete(id);
+      },
+      error: () => {
+        this.#questions$.delete(id);
+      },
+    });
+
+    return _questions$.pipe(
+      scan<string, Questioning>(
+        (prev, chunk) => {
+          if (!chunk.includes(SPEARATOR)) {
+            return { questions: [], chunk: prev.chunk + chunk };
+          }
+
+          const _questions = chunk.split(SPEARATOR);
+          return {
+            questions: [
+              _questions.at(0) + prev.chunk,
+              ..._questions.slice(1, -1),
+            ],
+            chunk: _questions.at(-1) ?? '',
+          };
+        },
+        {
+          questions: [],
+          chunk: '',
+        },
+      ),
+      filter(({ questions }) => !isEmpty(questions)),
+      concatMap(({ questions }) => of(...questions)),
+      filter((question) => !isEmpty(question)),
+      map<string, MessageEvent>((question) => ({
+        data: question,
+      })),
+    );
+  }
+
+  /**
+   * 提交
+   */
+  async submit(id: number, updateExamDto: UpdateExamDto) {
+    const _exam = await this.examRepository.findOneBy({ id });
+    if (!_exam) throw new Error('考试不存在');
+    if (!isSubmittable(_exam.status)) throw new Error('状态不允许');
+
+    return (
+      ((
+        await this.examRepository.update(id, {
+          ...this.examRepository.create(updateExamDto),
+          status: ExamStatus.Submitted,
+        })
+      ).affected ?? 0) > 0
+    );
+  }
+
+  /**
+   * 审查考试内容
+   */
+  review(id: number) {
+    const _reviewer$ = new Observable<string>((observer) => {
       this.examRepository
         .findOneBy({ id })
-        .then((exam) => {
-          if (!exam) throw new Error('考试不存在');
-          return useQuestionsPrompt(exam.position);
-        })
-        .then((_prompt) => {
-          for (const chunk in this.#robot.stream(_prompt)) {
+        .then(async (_exam) => {
+          if (!_exam) throw new Error('考试不存在');
+          if (!isReviewable(_exam.status)) {
+            observer.next(`${_exam.score}${SPEARATOR}${_exam.answers}`);
+            throw new Error('状态不允许');
+          }
+
+          const _prompt = await useReviewPrompt();
+          for (const chunk in await this.#robot.stream(_prompt)) {
             observer.next(chunk);
           }
         })
@@ -64,31 +180,38 @@ export class ExamService {
         });
     });
 
-    return _creator.pipe(
-      scan<string, { question: string[]; chunks: string }>(
-        (prev, chunk) => {
-          if (!chunk.includes(SPEARATOR)) {
-            return { question: [], chunks: prev.chunks + chunk };
-          }
+    _reviewer$.pipe(reduce((prev, chunk) => prev + chunk, '')).subscribe({
+      next: (scoreAndComments) => {
+        const [score, ...comments] = scoreAndComments.split(SPEARATOR);
+        this.examRepository.update(
+          { id, status: ExamStatus.Submitted },
+          {
+            score: Number(score) || 0,
+            comments: comments.join(''),
+            status: ExamStatus.Frozen,
+          },
+        );
+      },
+    });
 
-          const _questions = chunk.split(SPEARATOR);
+    return _reviewer$.pipe(
+      scan<string, Reviewing>(
+        (prev, comments) => {
           return {
-            question: [
-              _questions.at(0) + prev.chunks,
-              ..._questions.slice(1, -1),
-            ],
-            chunks: _questions.at(-1) ?? '',
+            isScored: prev.isScored || comments.includes(SPEARATOR),
+            comments: prev.isScored ? comments : prev.comments + comments,
           };
         },
         {
-          question: [],
-          chunks: '',
+          isScored: false,
+          comments: '',
         },
       ),
-      filter(({ question }) => question.length > 0),
-      concatMap(({ question }) => of(...question)),
-      map<string, MessageEvent>((question) => ({
-        data: question,
+      filter(({ isScored }) => isScored),
+      concatMap(({ comments }) => of(...comments.split(SPEARATOR))),
+      filter((scoreOrComments) => !!scoreOrComments),
+      map<string, MessageEvent>((scoreOrComments) => ({
+        data: scoreOrComments,
       })),
     );
   }
