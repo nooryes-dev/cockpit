@@ -1,6 +1,8 @@
+import { MessageEvent } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum StatusCode {
+  Continue = '100',
   Success = '200',
   Unauthorized = '401',
   Fail = '500',
@@ -39,3 +41,11 @@ export class FailedResponse {
  * @description 全局统一的响应格式
  */
 export type UnifiedResponse = SucceedResponse<unknown> | FailedResponse;
+
+/**
+ * @description Completed Message Event
+ */
+export const COMPLETED_MESSAGE_EVENT = (): MessageEvent => ({
+  data: '',
+  type: StatusCode.Success,
+});

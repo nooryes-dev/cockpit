@@ -10,7 +10,16 @@ import {
 } from '@/libs/database/entities/exam.entity';
 import { type Repository } from 'typeorm';
 import { ChatAlibabaTongyi } from '@langchain/community/chat_models/alibaba_tongyi';
-import { concatMap, filter, map, Observable, of, reduce, scan } from 'rxjs';
+import {
+  concatMap,
+  endWith,
+  filter,
+  map,
+  Observable,
+  of,
+  reduce,
+  scan,
+} from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
 import {
   type Questioning,
@@ -22,6 +31,7 @@ import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
 import { isEmpty } from '@aiszlab/relax';
 import { operate } from 'rxjs/internal/util/lift';
 import { createOperatorSubscriber } from 'rxjs/internal/operators/OperatorSubscriber';
+import { COMPLETED_MESSAGE_EVENT, StatusCode } from 'typings/response.types';
 
 @Injectable()
 export class ExamService {
@@ -153,7 +163,9 @@ export class ExamService {
       filter((question) => !isEmpty(question)),
       map<string, MessageEvent>((question) => ({
         data: question,
+        type: StatusCode.Continue,
       })),
+      endWith<MessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
   }
 
@@ -235,6 +247,7 @@ export class ExamService {
       map<string, MessageEvent>((scoreOrComments) => ({
         data: scoreOrComments,
       })),
+      endWith<MessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
   }
 }
