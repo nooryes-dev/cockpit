@@ -43,7 +43,7 @@ export class ExamService {
     private readonly examRepository: Repository<Exam>,
   ) {
     this.#robot = new ChatAlibabaTongyi({
-      model: 'qwen-plus',
+      model: 'qwen-turbo-2025-04-28',
     });
     this.#questions$ = new Map();
   }
