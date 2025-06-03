@@ -25,7 +25,7 @@ import {
   type Questioning,
   useQuestionsPrompt,
 } from './prompts/question.prompt';
-import { type UpdateExamDto } from './dto/submit-exam.dto';
+import { type SubmitExamDto } from './dto/submit-exam.dto';
 import { SPEARATOR } from './constants';
 import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
 import { isEmpty } from '@aiszlab/relax';
@@ -172,7 +172,7 @@ export class ExamService {
   /**
    * 提交
    */
-  async submit(id: number, updateExamDto: UpdateExamDto) {
+  async submit(id: number, { answers }: SubmitExamDto) {
     const _exam = await this.examRepository.findOneBy({ id });
     if (!_exam) throw new Error('考试不存在');
     if (!isSubmittable(_exam.status)) throw new Error('状态不允许');
@@ -180,8 +180,8 @@ export class ExamService {
     return (
       ((
         await this.examRepository.update(id, {
-          ...this.examRepository.create(updateExamDto),
           status: ExamStatus.Submitted,
+          answers: JSON.stringify(answers),
         })
       ).affected ?? 0) > 0
     );
@@ -197,11 +197,15 @@ export class ExamService {
         .then(async (_exam) => {
           if (!_exam) throw new Error('考试不存在');
           if (!isReviewable(_exam.status)) {
-            observer.next(`${_exam.score}${SPEARATOR}${_exam.answers}`);
+            observer.next(`${_exam.score}${SPEARATOR}${_exam.comments}`);
             throw new Error('状态不允许');
           }
 
-          const _prompt = await useReviewPrompt();
+          const _prompt = await useReviewPrompt({
+            answers: JSON.parse(_exam.answers ?? '[]'),
+            questions: _exam.questions?.split(SPEARATOR) ?? [],
+            position: _exam.position,
+          });
           for await (const chunk of await this.#robot.stream(_prompt)) {
             observer.next(chunk.content.toString());
           }

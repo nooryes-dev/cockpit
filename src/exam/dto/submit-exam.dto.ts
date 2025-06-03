@@ -1,11 +1,12 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({ description: '提交考试' })
-export class UpdateExamDto {
+export class SubmitExamDto {
   @ApiProperty({
     description: '答案',
-    type: String,
     required: true,
+    isArray: true,
+    type: 'string',
   })
-  answers: string;
+  answers: string[];
 }

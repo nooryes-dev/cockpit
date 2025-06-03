@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
-import { UpdateExamDto } from './dto/submit-exam.dto';
+import { SubmitExamDto } from './dto/submit-exam.dto';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -48,9 +48,9 @@ export class ExamController {
   @Post('submit/:id')
   submit(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateExamDto: UpdateExamDto,
+    @Body() submitExamDto: SubmitExamDto,
   ) {
-    return this.examService.submit(id, updateExamDto);
+    return this.examService.submit(id, submitExamDto);
   }
 
   @ApiBearerAuth()
