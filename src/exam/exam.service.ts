@@ -32,6 +32,8 @@ import { isEmpty } from '@aiszlab/relax';
 import { operate } from 'rxjs/internal/util/lift';
 import { createOperatorSubscriber } from 'rxjs/internal/operators/OperatorSubscriber';
 import { COMPLETED_MESSAGE_EVENT, StatusCode } from 'typings/response.types';
+import { QueryExamsDto } from './dto/query-exams.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class ExamService {
@@ -41,6 +43,7 @@ export class ExamService {
   constructor(
     @InjectRepository(Exam)
     private readonly examRepository: Repository<Exam>,
+    private readonly userService: UserService,
   ) {
     this.#robot = new ChatAlibabaTongyi({
       model: 'qwen-turbo-2025-04-28',
@@ -53,13 +56,13 @@ export class ExamService {
    * @description
    * 用户会输入需要创建考试的职位，利用大模型标准化职位名称
    */
-  async create(createExamDto: CreateExamDto) {
+  async create(createExamDto: CreateExamDto, createdById: number) {
     const position = await usePositionPrompt(createExamDto.position)
       .then((_prompt) => this.#robot.invoke(_prompt))
       .then(({ content }) => content.toString());
 
     const _exam = await this.examRepository.save(
-      this.examRepository.create({ position }),
+      this.examRepository.create({ position, createdById }),
     );
 
     return _exam;
@@ -253,5 +256,28 @@ export class ExamService {
       })),
       endWith<MessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
+  }
+
+  /**
+   * 获取当前用户的考试列表
+   */
+  async exmas({ page, pageSize }: QueryExamsDto, who: number) {
+    const qb = this.examRepository
+      .createQueryBuilder('exam')
+      .where('1 = 1')
+      .andWhere('exam.createdById = :who', { who })
+      .offset((page - 1) * pageSize)
+      .orderBy('exam.createdAt', 'DESC')
+      .limit(pageSize);
+
+    const [_articles, count] = await qb.getManyAndCount();
+
+    return [
+      await this.userService.getUsersByIds(_articles, {
+        createdById: 'createdBy',
+        updatedById: 'updatedBy',
+      }),
+      count,
+    ];
   }
 }

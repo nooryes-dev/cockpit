@@ -6,6 +6,9 @@ import {
   Param,
   ParseIntPipe,
   UseGuards,
+  Get,
+  UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
@@ -19,6 +22,11 @@ import {
 import { ApiUnifiedResponse } from 'src/decorators/api-unified-response.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { Exam } from '@/libs/database/entities/exam.entity';
+import { WhoAmI } from 'src/decorators/who-am-i.decorator';
+import { User } from '@/libs/database';
+import { ApiUnifiedPaginatedResponse } from 'src/decorators/api-unified-paginated-response.decorator';
+import { PaginatedResponseInterceptor } from 'src/interceptors/paginated-response.interceptor';
+import { QueryExamsDto } from './dto/query-exams.dto';
 
 @ApiTags('面试间')
 @ApiExtraModels(Exam)
@@ -31,8 +39,11 @@ export class ExamController {
   @ApiUnifiedResponse(Exam)
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createExamDto: CreateExamDto) {
-    return this.examService.create(createExamDto);
+  create(
+    @Body() createExamDto: CreateExamDto,
+    @WhoAmI() { id: createdById }: User,
+  ) {
+    return this.examService.create(createExamDto, createdById);
   }
 
   @ApiBearerAuth()
@@ -59,5 +70,15 @@ export class ExamController {
   @Sse('/review/:id')
   review(@Param('id', ParseIntPipe) id: number) {
     return this.examService.review(id);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '分页获取面试间列表' })
+  @ApiUnifiedPaginatedResponse(Exam)
+  @UseInterceptors(PaginatedResponseInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Get('list')
+  exams(@Query() queryExamsDto: QueryExamsDto, @WhoAmI() { id }: User) {
+    return this.examService.exmas(queryExamsDto, id);
   }
 }

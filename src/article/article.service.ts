@@ -70,7 +70,6 @@ export class ArticleService {
       .createQueryBuilder('article')
       .leftJoinAndSelect('article.category', 'category')
       .where('1 = 1')
-      .orderBy('article.id')
       .offset((page - 1) * pageSize)
       .orderBy('article.updatedAt', 'DESC')
       .limit(pageSize);

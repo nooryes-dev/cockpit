@@ -1,6 +1,7 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { _Preset } from './_preset.entity';
+import { User } from './user.entity';
 
 export enum ExamStatus {
   // 初始化
@@ -60,6 +61,19 @@ export class Exam extends _Preset {
     default: ExamStatus.Initialized,
   })
   status: ExamStatus;
+
+  @ApiProperty({ description: '创建人id', type: Number })
+  @Column({
+    name: 'created_by_id',
+  })
+  createdById: number;
+
+  @ManyToOne(() => User)
+  @JoinColumn({
+    name: 'created_by_id',
+    referencedColumnName: 'id',
+  })
+  createdBy: User;
 }
 
 // 利用二进制位运算实现状态权限控制
