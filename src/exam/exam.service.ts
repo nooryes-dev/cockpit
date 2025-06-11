@@ -38,7 +38,6 @@ import { UserService } from 'src/user/user.service';
 @Injectable()
 export class ExamService {
   #robot: ChatAlibabaTongyi;
-  #questions$: Map<number, Observable<string>>;
 
   constructor(
     @InjectRepository(Exam)
@@ -48,7 +47,6 @@ export class ExamService {
     this.#robot = new ChatAlibabaTongyi({
       model: 'qwen-turbo-2025-04-28',
     });
-    this.#questions$ = new Map();
   }
 
   /**
@@ -74,34 +72,36 @@ export class ExamService {
    * 根据已经落库的条目。生成对应的问题
    */
   generateQuestions(id: number) {
-    const _questions$ =
-      this.#questions$.get(id) ??
-      new Observable<string>((observer) => {
-        this.examRepository
-          .findOneBy({ id })
-          .then(async (_exam) => {
-            if (!_exam) throw new Error('考试不存在');
+    console.log('id====', id);
 
-            if (!isQuestionsGenerable(_exam.status)) {
-              observer.next(_exam.questions ?? '');
-              return;
-            }
+    const _questions$ = new Observable<string>((observer) => {
+      this.examRepository
+        .findOneBy({ id })
+        .then(async (_exam) => {
+          if (!_exam) throw new Error('考试不存在');
 
-            const _prompt = await useQuestionsPrompt(_exam.position);
-            for await (const chunk of await this.#robot.stream(_prompt)) {
-              observer.next(chunk.content.toString());
-            }
-          })
-          .catch((error) => {
-            observer.error(error);
-          })
-          .finally(() => {
-            observer.complete();
-          });
-      });
+          if (!isQuestionsGenerable(_exam.status)) {
+            observer.next(_exam.questions ?? '');
+            return;
+          }
+
+          const _prompt = await useQuestionsPrompt(_exam.position);
+          const _stream = await this.#robot.stream(_prompt);
+
+          for await (const chunk of _stream) {
+            observer.next(chunk.content.toString());
+          }
+        })
+        .catch((error) => {
+          // console.log('error=======', error);
+          // observer.error(error);
+        })
+        .finally(() => {
+          observer.complete();
+        });
+    });
 
     // 缓存问题生成流，保证同一时间只有一个生成流
-    this.#questions$.set(id, _questions$);
     _questions$.pipe(reduce((prev, chunk) => prev + chunk, '')).subscribe({
       next: (questions) => {
         this.examRepository.update(
@@ -112,18 +112,14 @@ export class ExamService {
           },
         );
       },
-      complete: () => {
-        this.#questions$.delete(id);
-      },
-      error: () => {
-        this.#questions$.delete(id);
-      },
     });
 
     return _questions$.pipe(
       scan<string, Questioning>(
         (prev, chunk) => {
           const _chunk = prev.chunk + chunk;
+
+          console.log('chunk=====', chunk);
 
           if (!_chunk.includes(SPEARATOR)) {
             return { questions: [], chunk: _chunk };
