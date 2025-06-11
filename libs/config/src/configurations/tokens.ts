@@ -18,4 +18,6 @@ export enum PropertyToken {
 
   ConsumerEnd = 'consumer-end',
   BusinessEnd = 'business-end',
+
+  DatabasePassword = 'database-password',
 }

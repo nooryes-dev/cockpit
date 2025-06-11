@@ -7,5 +7,6 @@ export default registerAs(NameSpaceToken.Aliyun, () => {
     [PropertyToken.OssAccessKeySecret]:
       process.env.ALIYUN_OSS_ACCESS_KEY_SECRET,
     [PropertyToken.OssRoleArn]: process.env.ALIYUN_OSS_ROLE_ARN,
+    [PropertyToken.DatabasePassword]: process.env.DATABASE_PASSWORD,
   };
 });

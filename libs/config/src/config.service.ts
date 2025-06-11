@@ -77,4 +77,11 @@ export class ConfigService {
   get getAppBusinessEndEnd() {
     return this.#get(NameSpaceToken.App, PropertyToken.BusinessEnd);
   }
+
+  /**
+   * @description 数据库密码
+   */
+  get databasePassword() {
+    return this.#get(NameSpaceToken.Aliyun, PropertyToken.DatabasePassword);
+  }
 }

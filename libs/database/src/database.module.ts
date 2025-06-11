@@ -18,6 +18,7 @@ import { Exam } from './entities/exam.entity';
           host: 'localhost',
           port: 3306,
           username: 'root',
+          password: configService.databasePassword,
           database: configService.appCode,
           entities: [User, TechStack, Category, Article, Question, Exam],
           synchronize: true,
