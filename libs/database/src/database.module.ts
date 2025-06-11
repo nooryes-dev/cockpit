@@ -15,9 +15,9 @@ import { Exam } from './entities/exam.entity';
       useFactory(configService: ConfigService) {
         return {
           type: 'mysql',
-          host: 'localhost',
-          port: 3306,
           username: 'root',
+          host: configService.databaseHost,
+          port: configService.databasePort,
           password: configService.databasePassword,
           database: configService.appCode,
           entities: [User, TechStack, Category, Article, Question, Exam],

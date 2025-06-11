@@ -20,4 +20,6 @@ export enum PropertyToken {
   BusinessEnd = 'business-end',
 
   DatabasePassword = 'database-password',
+  DatabaseHost = 'database-host',
+  DatabasePort = 'database-port',
 }

@@ -84,4 +84,18 @@ export class ConfigService {
   get databasePassword() {
     return this.#get(NameSpaceToken.Aliyun, PropertyToken.DatabasePassword);
   }
+
+  /**
+   * @description 获取数据库连接地址
+   */
+  get databaseHost() {
+    return this.#get(NameSpaceToken.Aliyun, PropertyToken.DatabaseHost);
+  }
+
+  /**
+   * @description 获取数据库端口
+   */
+  get databasePort() {
+    return this.#get<number>(NameSpaceToken.Aliyun, PropertyToken.DatabasePort);
+  }
 }
