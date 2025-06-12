@@ -46,7 +46,7 @@ export class ExamController {
     return this.examService.create(createExamDto, createdById);
   }
 
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @Sse('/questions/:id')
   generateQuestions(@Param('id', ParseIntPipe) id: number) {
     return this.examService.generateQuestions(id);

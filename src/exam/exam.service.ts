@@ -14,11 +14,13 @@ import {
   concatMap,
   endWith,
   filter,
+  interval,
   map,
   Observable,
   of,
   reduce,
   scan,
+  tap,
 } from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
 import {
@@ -46,6 +48,9 @@ export class ExamService {
   ) {
     this.#robot = new ChatAlibabaTongyi({
       model: 'qwen-turbo-2025-04-28',
+      temperature: 1,
+      streaming: true,
+      maxConcurrency: 1,
     });
   }
 
@@ -80,24 +85,34 @@ export class ExamService {
         .then(async (_exam) => {
           if (!_exam) throw new Error('考试不存在');
 
-          if (!isQuestionsGenerable(_exam.status)) {
-            observer.next(_exam.questions ?? '');
+          // if (!isQuestionsGenerable(_exam.status)) {
+          //   observer.next(_exam.questions ?? '');
+          //   return;
+          // }
+
+          const _prompt = await useQuestionsPrompt(_exam.position);
+          const _stream = await this.#robot.stream(_prompt).catch((_error) => {
+            console.log('error======', _error);
+          });
+
+          console.log('_stream====', _stream);
+
+          if (!_stream) {
+            observer.error(new Error('大模型请求失败'));
             return;
           }
 
-          const _prompt = await useQuestionsPrompt(_exam.position);
-          const _stream = await this.#robot.stream(_prompt);
-
           for await (const chunk of _stream) {
+            console.log('chunk====', chunk);
+
             observer.next(chunk.content.toString());
           }
+
+          observer.complete();
         })
         .catch((error) => {
           // console.log('error=======', error);
           // observer.error(error);
-        })
-        .finally(() => {
-          observer.complete();
         });
     });
 
@@ -114,12 +129,16 @@ export class ExamService {
       },
     });
 
+    _questions$.pipe(
+      tap(() => {
+        console.log('12321321');
+      }),
+    );
+
     return _questions$.pipe(
       scan<string, Questioning>(
         (prev, chunk) => {
           const _chunk = prev.chunk + chunk;
-
-          console.log('chunk=====', chunk);
 
           if (!_chunk.includes(SPEARATOR)) {
             return { questions: [], chunk: _chunk };
@@ -157,13 +176,16 @@ export class ExamService {
           ),
         );
       }),
+
       filter(({ questions }) => !isEmpty(questions)),
       concatMap(({ questions }) => of(...questions)),
       filter((question) => !isEmpty(question)),
-      map<string, MessageEvent>((question) => ({
-        data: question,
-        type: StatusCode.Continue,
-      })),
+      map<string, MessageEvent>((question) => {
+        return {
+          data: question,
+          type: StatusCode.Continue,
+        };
+      }),
       endWith<MessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
   }
