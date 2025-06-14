@@ -47,8 +47,9 @@ export class ExamController {
   }
 
   @ApiBearerAuth()
-  @Sse('/questions/:id')
-  generateQuestions(@Param('id', ParseIntPipe) id: number) {
+  @UseGuards(JwtAuthGuard)
+  @Sse('/generate/:id')
+  generate(@Param('id', ParseIntPipe) id: number) {
     return this.examService.generate(id);
   }
 
@@ -56,7 +57,7 @@ export class ExamController {
   @ApiOperation({ summary: '提交面试结果' })
   @ApiUnifiedResponse({ type: 'boolean' })
   @UseGuards(JwtAuthGuard)
-  @Post('submit/:id')
+  @Post('/submit/:id')
   submit(
     @Param('id', ParseIntPipe) id: number,
     @Body() submitExamDto: SubmitExamDto,
@@ -77,7 +78,7 @@ export class ExamController {
   @ApiUnifiedPaginatedResponse(Exam)
   @UseInterceptors(PaginatedResponseInterceptor)
   @UseGuards(JwtAuthGuard)
-  @Get('list')
+  @Get('/list')
   exams(@Query() queryExamsDto: QueryExamsDto, @WhoAmI() { id }: User) {
     return this.examService.exmas(queryExamsDto, id);
   }

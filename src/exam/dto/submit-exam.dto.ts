@@ -1,4 +1,10 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsNotEmpty,
+} from 'class-validator';
 
 @ApiSchema({ description: '提交考试' })
 export class SubmitExamDto {
@@ -8,5 +14,9 @@ export class SubmitExamDto {
     isArray: true,
     type: 'string',
   })
+  @IsArray()
+  @ArrayMinSize(10)
+  @ArrayMaxSize(10)
+  @IsNotEmpty({ each: true })
   answers: string[];
 }
