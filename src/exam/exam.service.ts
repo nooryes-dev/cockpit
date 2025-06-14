@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   Exam,
   ExamStatus,
-  isQuestionsGenerable,
+  isGenerable,
   isReviewable,
   isSubmittable,
 } from '@/libs/database/entities/exam.entity';
@@ -87,11 +87,15 @@ export class ExamService {
         .then(async (_exam) => {
           if (!_exam) throw new Error('考试不存在');
 
-          if (!isQuestionsGenerable(_exam.status)) {
-            observer.next(_exam.questions ?? '');
+          if (!isGenerable(_exam.status)) {
+            observer.next(_exam.questionsMessage);
             return;
           }
 
+          // 更新为生成中
+          await this.examRepository.update(id, {
+            status: ExamStatus.Generating,
+          });
           const _prompt = await useQuestionsPrompt(_exam.position);
           for await (const chunk of await this.#robot.stream(_prompt)) {
             observer.next(chunk.content.toString());
@@ -103,19 +107,6 @@ export class ExamService {
         .finally(() => {
           observer.complete();
         });
-    });
-
-    // 缓存问题生成流，保证同一时间只有一个生成流
-    _questions$.pipe(reduce((prev, chunk) => prev + chunk, '')).subscribe({
-      next: (questions) => {
-        this.examRepository.update(
-          { id, status: ExamStatus.Initialized },
-          {
-            questions,
-            status: ExamStatus.Draft,
-          },
-        );
-      },
     });
 
     const _piped$ = _questions$.pipe(
@@ -183,8 +174,8 @@ export class ExamService {
         this.examRepository.update(
           { id, status: ExamStatus.Initialized },
           {
-            questions: JSON.stringify(questions),
-            status: ExamStatus.Draft,
+            _questions: JSON.stringify(questions),
+            status: ExamStatus.Generating,
           },
         );
       });
@@ -219,6 +210,7 @@ export class ExamService {
         .findOneBy({ id })
         .then(async (_exam) => {
           if (!_exam) throw new Error('考试不存在');
+
           if (!isReviewable(_exam.status)) {
             observer.next(`${_exam.score}${SPEARATOR}${_exam.comments}`);
             throw new Error('状态不允许');
@@ -226,7 +218,7 @@ export class ExamService {
 
           const _prompt = await useReviewPrompt({
             answers: JSON.parse(_exam.answers ?? '[]'),
-            questions: _exam.questions?.split(SPEARATOR) ?? [],
+            questions: _exam.questions,
             position: _exam.position,
           });
           for await (const chunk of await this.#robot.stream(_prompt)) {

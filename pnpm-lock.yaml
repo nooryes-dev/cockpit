@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@aiszlab/relax':
-        specifier: 2.0.6-beta.2
-        version: 2.0.6-beta.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 2.0.6-beta.3
+        version: 2.0.6-beta.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@langchain/core':
         specifier: ^0.3.57
         version: 0.3.57(openai@4.103.0(ws@8.18.2)(zod@3.25.30))
@@ -153,8 +153,8 @@ importers:
 
 packages:
 
-  '@aiszlab/relax@2.0.6-beta.2':
-    resolution: {integrity: sha512-/Ykb1O3Auu6QtDe50nZWc73DqvjgzU38sH8whGKeWRQSyQiVrKhpJK2yBI1Im49U2IBMIWyCnIZ+eWy7m7i3fw==}
+  '@aiszlab/relax@2.0.6-beta.3':
+    resolution: {integrity: sha512-NnKqsK86lMYNouA3Xjq7hRpxEOfVISHfHyXhHagQTs+0QNw7HExPRGINGGMPK160nHNx00HiIQ0D8HbvM1MiyQ==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -3536,7 +3536,7 @@ packages:
 
 snapshots:
 
-  '@aiszlab/relax@2.0.6-beta.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@aiszlab/relax@2.0.6-beta.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.27.3
       react: 18.3.1
