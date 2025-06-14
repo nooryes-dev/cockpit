@@ -8,7 +8,7 @@ import {
   isReviewable,
   isSubmittable,
 } from '@/libs/database/entities/exam.entity';
-import { type Repository } from 'typeorm';
+import { In, Not, type Repository } from 'typeorm';
 import {
   concatMap,
   endWith,
@@ -64,6 +64,15 @@ export class ExamService {
    * 用户会输入需要创建考试的职位，利用大模型标准化职位名称
    */
   async create(createExamDto: CreateExamDto, createdById: number) {
+    // 当前用户存在未冻结的考试时，不允许新建
+    if (
+      (await this.examRepository.countBy({
+        status: Not(In([ExamStatus.Frozen])),
+      })) > 0
+    ) {
+      throw new Error('存在未完成的面试间，不允许新建！');
+    }
+
     const position = await usePositionPrompt(createExamDto.position)
       .then((_prompt) => this.#robot.invoke(_prompt))
       .then(({ content }) => content.toString());
@@ -87,12 +96,13 @@ export class ExamService {
         .then(async (_exam) => {
           if (!_exam) throw new Error('考试不存在');
 
+          // 考试状态卡控
           if (!isGenerable(_exam.status)) {
-            observer.next(_exam.questionsMessage);
+            observer.next(_exam.questionsChunk);
             return;
           }
 
-          // 更新为生成中
+          // 更新状态为生成中
           await this.examRepository.update(id, {
             status: ExamStatus.Generating,
           });
@@ -174,7 +184,7 @@ export class ExamService {
         this.examRepository.update(
           { id, status: ExamStatus.Initialized },
           {
-            _questions: JSON.stringify(questions),
+            questions: JSON.stringify(questions),
             status: ExamStatus.Generating,
           },
         );
@@ -212,13 +222,13 @@ export class ExamService {
           if (!_exam) throw new Error('考试不存在');
 
           if (!isReviewable(_exam.status)) {
-            observer.next(`${_exam.score}${SPEARATOR}${_exam.comments}`);
-            throw new Error('状态不允许');
+            observer.next(_exam.scoreAndComments);
+            return;
           }
 
           const _prompt = await useReviewPrompt({
             answers: JSON.parse(_exam.answers ?? '[]'),
-            questions: _exam.questions,
+            questions: _exam.questionList,
             position: _exam.position,
           });
           for await (const chunk of await this.#robot.stream(_prompt)) {

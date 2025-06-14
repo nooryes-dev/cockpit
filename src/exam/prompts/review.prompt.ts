@@ -1,5 +1,6 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { SPEARATOR } from '../constants';
+import { at } from '@aiszlab/relax';
 
 const template = ChatPromptTemplate.fromMessages([
   ChatPromptTemplate.fromTemplate(
@@ -32,11 +33,15 @@ export const useReviewPrompt = ({
 }) => {
   return template.invoke({
     position,
-    ...Object.fromEntries(
-      questions.map((question, index) => [`question${index + 1}`, question]),
+    ...Object.fromEntries<string>(
+      Array.from({ length: 10 }).map((_, index) => {
+        return [`question${index + 1}`, at(questions, index) ?? ''];
+      }),
     ),
-    ...Object.fromEntries(
-      answers.map((answer, index) => [`answer${index + 1}`, answer]),
+    ...Object.fromEntries<string>(
+      Array.from({ length: 10 }).map((_, index) => {
+        return [`answer${index + 1}`, at(answers, index) ?? ''];
+      }),
     ),
   });
 };

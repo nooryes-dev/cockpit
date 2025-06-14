@@ -36,9 +36,8 @@ export class Exam extends _Preset {
   @Column({
     type: 'longtext',
     nullable: true,
-    name: 'questions',
   })
-  _questions: string | undefined;
+  questions: string | undefined;
 
   @ApiProperty({ description: '用户解答' })
   @Column({
@@ -85,15 +84,22 @@ export class Exam extends _Preset {
   /**
    * 序列化的考试问题
    */
-  get questions(): string[] {
-    return tryParse(this._questions);
+  get questionList(): string[] {
+    return tryParse(this.questions);
   }
 
   /**
    * 按约定间隔符拼接的问题文本
    */
-  get questionsMessage() {
-    return this.questions.join(SPEARATOR);
+  get questionsChunk() {
+    return this.questionList.join(SPEARATOR);
+  }
+
+  /**
+   * 打分和评论的合并消息
+   */
+  get scoreAndComments() {
+    return `${this.score}${SPEARATOR}${this.comments}`;
   }
 }
 
