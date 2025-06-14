@@ -57,7 +57,7 @@ export class AuthenticationService {
   async signIn(id: number, to: string = 'nooryes-web') {
     const _user = await this.userService.getUserById(id);
     if (!_user) return { id };
-    if (to !== this.configService.getAppBusinessEndEnd) return _user;
+    if (to !== this.configService.appBusinessEnd) return _user;
 
     const isAdmin = this.configService.admins.has(_user.username);
     if (!isAdmin) {

@@ -22,4 +22,6 @@ export enum PropertyToken {
   DatabasePassword = 'database-password',
   DatabaseHost = 'database-host',
   DatabasePort = 'database-port',
+
+  AlibabaApiKey = 'alibaba-api-key',
 }

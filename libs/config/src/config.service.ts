@@ -74,7 +74,7 @@ export class ConfigService {
   /**
    * @description 获取管理端应用code
    */
-  get getAppBusinessEndEnd() {
+  get appBusinessEnd() {
     return this.#get(NameSpaceToken.App, PropertyToken.BusinessEnd);
   }
 
@@ -97,5 +97,15 @@ export class ConfigService {
    */
   get databasePort() {
     return this.#get<number>(NameSpaceToken.Aliyun, PropertyToken.DatabasePort);
+  }
+
+  /**
+   * @description 获取 AI API Key
+   */
+  get alibabaApiKey() {
+    return this.#get<string>(
+      NameSpaceToken.Aliyun,
+      PropertyToken.AlibabaApiKey,
+    );
   }
 }

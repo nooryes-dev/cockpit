@@ -11,5 +11,7 @@ export default registerAs(NameSpaceToken.Aliyun, () => {
     [PropertyToken.DatabasePassword]: process.env.DATABASE_PASSWORD,
     [PropertyToken.DatabaseHost]: process.env.DATABASE_HOST || 'localhost',
     [PropertyToken.DatabasePort]: +(process.env.DATABASE_PORT || 3306),
+
+    [PropertyToken.AlibabaApiKey]: process.env.ALIBABA_API_KEY,
   };
 });

@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -9,18 +9,15 @@ import {
   isSubmittable,
 } from '@/libs/database/entities/exam.entity';
 import { type Repository } from 'typeorm';
-import { ChatAlibabaTongyi } from '@langchain/community/chat_models/alibaba_tongyi';
 import {
   concatMap,
   endWith,
   filter,
-  interval,
   map,
   Observable,
   of,
   reduce,
   scan,
-  tap,
 } from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
 import {
@@ -30,27 +27,34 @@ import {
 import { type SubmitExamDto } from './dto/submit-exam.dto';
 import { SPEARATOR } from './constants';
 import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
-import { isEmpty } from '@aiszlab/relax';
+import { isEmpty, last } from '@aiszlab/relax';
 import { operate } from 'rxjs/internal/util/lift';
 import { createOperatorSubscriber } from 'rxjs/internal/operators/OperatorSubscriber';
 import { COMPLETED_MESSAGE_EVENT, StatusCode } from 'typings/response.types';
 import { QueryExamsDto } from './dto/query-exams.dto';
 import { UserService } from 'src/user/user.service';
+import { ChatOpenAI } from '@langchain/openai';
+import { ConfigService } from '@/libs/config';
+import { GenerateExamMessageEvent } from './dto/generate-exam.dto';
+import { Voidable } from '@aiszlab/relax/types';
+import { ReviewExamMessageEvent } from './dto/review-exam.dto';
 
 @Injectable()
 export class ExamService {
-  #robot: ChatAlibabaTongyi;
+  #robot: ChatOpenAI;
 
   constructor(
     @InjectRepository(Exam)
     private readonly examRepository: Repository<Exam>,
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {
-    this.#robot = new ChatAlibabaTongyi({
+    this.#robot = new ChatOpenAI({
       model: 'qwen-turbo-2025-04-28',
-      temperature: 1,
-      streaming: true,
-      maxConcurrency: 1,
+      configuration: {
+        baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        apiKey: configService.alibabaApiKey,
+      },
     });
   }
 
@@ -76,43 +80,28 @@ export class ExamService {
    * @description
    * 根据已经落库的条目。生成对应的问题
    */
-  generateQuestions(id: number) {
-    console.log('id====', id);
-
+  generate(id: number) {
     const _questions$ = new Observable<string>((observer) => {
       this.examRepository
         .findOneBy({ id })
         .then(async (_exam) => {
           if (!_exam) throw new Error('考试不存在');
 
-          // if (!isQuestionsGenerable(_exam.status)) {
-          //   observer.next(_exam.questions ?? '');
-          //   return;
-          // }
-
-          const _prompt = await useQuestionsPrompt(_exam.position);
-          const _stream = await this.#robot.stream(_prompt).catch((_error) => {
-            console.log('error======', _error);
-          });
-
-          console.log('_stream====', _stream);
-
-          if (!_stream) {
-            observer.error(new Error('大模型请求失败'));
+          if (!isQuestionsGenerable(_exam.status)) {
+            observer.next(_exam.questions ?? '');
             return;
           }
 
-          for await (const chunk of _stream) {
-            console.log('chunk====', chunk);
-
+          const _prompt = await useQuestionsPrompt(_exam.position);
+          for await (const chunk of await this.#robot.stream(_prompt)) {
             observer.next(chunk.content.toString());
           }
-
-          observer.complete();
         })
         .catch((error) => {
-          // console.log('error=======', error);
-          // observer.error(error);
+          observer.error(error);
+        })
+        .finally(() => {
+          observer.complete();
         });
     });
 
@@ -129,13 +118,7 @@ export class ExamService {
       },
     });
 
-    _questions$.pipe(
-      tap(() => {
-        console.log('12321321');
-      }),
-    );
-
-    return _questions$.pipe(
+    const _piped$ = _questions$.pipe(
       scan<string, Questioning>(
         (prev, chunk) => {
           const _chunk = prev.chunk + chunk;
@@ -155,39 +138,58 @@ export class ExamService {
           chunk: '',
         },
       ),
-      operate<Questioning, Questioning>((source, subscriber) => {
-        let buffer: Questioning[] | null = [];
+      operate<Questioning, Voidable<string>[]>((source, subscriber) => {
+        let buffer: Voidable<string>[] | null = null;
         source.subscribe(
           createOperatorSubscriber(
             subscriber,
             (value) => {
-              buffer?.push(value);
-              subscriber.next(value);
+              buffer?.push(value.chunk);
+              subscriber.next(value.questions);
             },
             () => {
-              const _last = buffer?.at(-1);
-              subscriber.next({ questions: [_last?.chunk ?? ''], chunk: '' });
+              subscriber.next([last(buffer)]);
               subscriber.complete();
             },
-            undefined,
+            void 0,
             () => {
               buffer = null;
             },
           ),
         );
       }),
-
-      filter(({ questions }) => !isEmpty(questions)),
-      concatMap(({ questions }) => of(...questions)),
+      concatMap((questions) => of(...questions)),
       filter((question) => !isEmpty(question)),
-      map<string, MessageEvent>((question) => {
+      map<string, GenerateExamMessageEvent>((question) => {
         return {
           data: question,
           type: StatusCode.Continue,
         };
       }),
-      endWith<MessageEvent>(COMPLETED_MESSAGE_EVENT()),
+      endWith<GenerateExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
+
+    // 面试问题生成完成后，更新数据库状态，并将面试问题存储到数据库中
+    _piped$
+      .pipe(
+        reduce<GenerateExamMessageEvent, string[]>((_questions, { data }) => {
+          if (data) {
+            _questions.push(data);
+          }
+          return _questions;
+        }, []),
+      )
+      .subscribe((questions) => {
+        this.examRepository.update(
+          { id, status: ExamStatus.Initialized },
+          {
+            questions: JSON.stringify(questions),
+            status: ExamStatus.Draft,
+          },
+        );
+      });
+
+    return _piped$;
   }
 
   /**
@@ -269,10 +271,10 @@ export class ExamService {
       filter(({ isScored }) => isScored),
       concatMap(({ comments }) => of(...comments.split(SPEARATOR))),
       filter((scoreOrComments) => !!scoreOrComments),
-      map<string, MessageEvent>((scoreOrComments) => ({
+      map<string, ReviewExamMessageEvent>((scoreOrComments) => ({
         data: scoreOrComments,
       })),
-      endWith<MessageEvent>(COMPLETED_MESSAGE_EVENT()),
+      endWith<ReviewExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
   }
 

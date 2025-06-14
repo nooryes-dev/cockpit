@@ -1,5 +1,9 @@
-import { MessageEvent } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { MessageEvent as _MessageType } from '@nestjs/common';
+
+export interface MessageEvent<T> extends Omit<_MessageType, 'data'> {
+  data: T;
+}
 
 export enum StatusCode {
   Continue = '100',
@@ -45,7 +49,7 @@ export type UnifiedResponse = SucceedResponse<unknown> | FailedResponse;
 /**
  * @description Completed Message Event
  */
-export const COMPLETED_MESSAGE_EVENT = (): MessageEvent => ({
-  data: null as unknown as object,
+export const COMPLETED_MESSAGE_EVENT = (): MessageEvent<null> => ({
+  data: null,
   type: StatusCode.Success,
 });
