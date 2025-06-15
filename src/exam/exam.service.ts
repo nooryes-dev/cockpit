@@ -27,7 +27,7 @@ import {
 import { type SubmitExamDto } from './dto/submit-exam.dto';
 import { SPEARATOR } from './constants';
 import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
-import { isEmpty, last } from '@aiszlab/relax';
+import { isEmpty } from '@aiszlab/relax';
 import { operate } from 'rxjs/internal/util/lift';
 import { createOperatorSubscriber } from 'rxjs/internal/operators/OperatorSubscriber';
 import { COMPLETED_MESSAGE_EVENT, StatusCode } from 'typings/response.types';
@@ -90,7 +90,7 @@ export class ExamService {
    * 根据已经落库的条目。生成对应的问题
    */
   generate(id: number) {
-    const _questions$ = new Observable<string>((observer) => {
+    const _questions$ = new Observable<string>((subscriber) => {
       this.examRepository
         .findOneBy({ id })
         .then(async (_exam) => {
@@ -98,7 +98,7 @@ export class ExamService {
 
           // 考试状态卡控
           if (!isGenerable(_exam.status)) {
-            observer.next(_exam.questionsChunk);
+            subscriber.next(_exam.questionsChunk);
             return;
           }
 
@@ -108,18 +108,18 @@ export class ExamService {
           });
           const _prompt = await useQuestionsPrompt(_exam.position);
           for await (const chunk of await this.#robot.stream(_prompt)) {
-            observer.next(chunk.content.toString());
+            subscriber.next(chunk.content.toString());
           }
         })
         .catch((error) => {
-          observer.error(error);
+          subscriber.error(error);
         })
         .finally(() => {
-          observer.complete();
+          subscriber.complete();
         });
     });
 
-    const _piped$ = _questions$.pipe(
+    return _questions$.pipe(
       scan<string, Questioning>(
         (prev, chunk) => {
           const _chunk = prev.chunk + chunk;
@@ -140,21 +140,38 @@ export class ExamService {
         },
       ),
       operate<Questioning, Voidable<string>[]>((source, subscriber) => {
-        let buffer: Voidable<string>[] | null = null;
+        let _questions: string[] | null = [];
+        let _lastQuestion: string | null = null;
+
         source.subscribe(
           createOperatorSubscriber(
             subscriber,
             (value) => {
-              buffer?.push(value.chunk);
+              _questions?.push(...value.questions);
+              _lastQuestion = value.chunk;
               subscriber.next(value.questions);
             },
             () => {
-              subscriber.next([last(buffer)]);
-              subscriber.complete();
+              if (_lastQuestion) {
+                _questions?.push(_lastQuestion);
+                subscriber.next([_lastQuestion]);
+              }
+
+              Promise.all([
+                this.examRepository.update(
+                  { id, status: ExamStatus.Generating },
+                  {
+                    questions: JSON.stringify(_questions),
+                    status: ExamStatus.Draft,
+                  },
+                ),
+                subscriber.complete(),
+              ]);
             },
             void 0,
             () => {
-              buffer = null;
+              _questions = null;
+              _lastQuestion = null;
             },
           ),
         );
@@ -169,28 +186,6 @@ export class ExamService {
       }),
       endWith<GenerateExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
-
-    // 面试问题生成完成后，更新数据库状态，并将面试问题存储到数据库中
-    _piped$
-      .pipe(
-        reduce<GenerateExamMessageEvent, string[]>((_questions, { data }) => {
-          if (data) {
-            _questions.push(data);
-          }
-          return _questions;
-        }, []),
-      )
-      .subscribe((questions) => {
-        this.examRepository.update(
-          { id, status: ExamStatus.Initialized },
-          {
-            questions: JSON.stringify(questions),
-            status: ExamStatus.Generating,
-          },
-        );
-      });
-
-    return _piped$;
   }
 
   /**
@@ -227,7 +222,7 @@ export class ExamService {
           }
 
           const _prompt = await useReviewPrompt({
-            answers: JSON.parse(_exam.answers ?? '[]'),
+            answers: _exam.answerList,
             questions: _exam.questionList,
             position: _exam.position,
           });
@@ -244,9 +239,10 @@ export class ExamService {
     });
 
     _reviewer$.pipe(reduce((prev, chunk) => prev + chunk, '')).subscribe({
-      next: (scoreAndComments) => {
+      next: async (scoreAndComments) => {
         const [score, ...comments] = scoreAndComments.split(SPEARATOR);
-        this.examRepository.update(
+
+        await this.examRepository.update(
           { id, status: ExamStatus.Submitted },
           {
             score: Number(score) || 0,

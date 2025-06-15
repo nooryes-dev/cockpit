@@ -1,4 +1,5 @@
 import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { IsNumber, Min } from 'class-validator';
 
 @ApiSchema({ description: '分页请求格式' })
 export class Pagination {
@@ -7,6 +8,8 @@ export class Pagination {
     type: Number,
     default: 1,
   })
+  @IsNumber(void 0, { message: '请输入页码' })
+  @Min(1)
   page: number;
 
   @ApiProperty({
@@ -14,6 +17,8 @@ export class Pagination {
     type: Number,
     default: 10,
   })
+  @IsNumber(void 0, { message: '请输入每页数量' })
+  @Min(1)
   pageSize: number;
 }
 

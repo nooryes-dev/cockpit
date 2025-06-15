@@ -32,21 +32,21 @@ export class Exam extends _Preset {
   })
   position: string;
 
-  @ApiProperty({ description: '问题' })
+  @ApiProperty({ description: '问题列表', type: 'string', nullable: true })
   @Column({
     type: 'longtext',
     nullable: true,
   })
   questions: string | undefined;
 
-  @ApiProperty({ description: '用户解答' })
+  @ApiProperty({ description: '用户解答', type: 'string', nullable: true })
   @Column({
     type: 'longtext',
     nullable: true,
   })
   answers: string | undefined;
 
-  @ApiProperty({ description: '评论' })
+  @ApiProperty({ description: '评论', type: 'string', nullable: true })
   @Column({
     type: 'longtext',
     nullable: true,
@@ -60,7 +60,7 @@ export class Exam extends _Preset {
   })
   score: number;
 
-  @ApiProperty({ description: '考试状态' })
+  @ApiProperty({ description: '考试状态', enum: ExamStatus })
   @Column({
     type: 'enum',
     enum: ExamStatus,
@@ -93,6 +93,13 @@ export class Exam extends _Preset {
    */
   get questionsChunk() {
     return this.questionList.join(SPEARATOR);
+  }
+
+  /**
+   * @description 序列化的答案
+   */
+  get answerList() {
+    return tryParse(this.answers);
   }
 
   /**
