@@ -12,22 +12,19 @@ import { In, Not, type Repository } from 'typeorm';
 import { concatMap, endWith, filter, map, Observable, of, scan } from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
 import {
-  type Questioning,
+  type Questionsing,
   useQuestionsPrompt,
-} from './prompts/question.prompt';
+} from './prompts/questions.prompt';
 import { type SubmitExamDto } from './dto/submit-exam.dto';
 import { SPEARATOR } from './constants';
 import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
 import { isEmpty } from '@aiszlab/relax';
-import { operate } from 'rxjs/internal/util/lift';
-import { createOperatorSubscriber } from 'rxjs/internal/operators/OperatorSubscriber';
 import { COMPLETED_MESSAGE_EVENT, StatusCode } from 'typings/response.types';
 import { QueryExamsDto } from './dto/query-exams.dto';
 import { UserService } from 'src/user/user.service';
 import { ChatOpenAI } from '@langchain/openai';
 import { ConfigService } from '@/libs/config';
 import { GenerateExamMessageEvent } from './dto/generate-exam.dto';
-import { Voidable } from '@aiszlab/relax/types';
 import { ReviewExamMessageEvent } from './dto/review-exam.dto';
 
 @Injectable()
@@ -80,7 +77,7 @@ export class ExamService {
    * @description
    * 根据已经落库的条目。生成对应的问题
    */
-  generate(id: number) {
+  questions(id: number) {
     const _questions$ = new Observable<string>((subscriber) => {
       this.examRepository
         .findOneBy({ id })
@@ -111,7 +108,7 @@ export class ExamService {
     });
 
     return _questions$.pipe(
-      scan<string, Questioning>(
+      scan<string, Questionsing>(
         (prev, chunk) => {
           const _chunk = prev.chunk + chunk;
 
@@ -130,19 +127,18 @@ export class ExamService {
           chunk: '',
         },
       ),
-      operate<Questioning, Voidable<string>[]>((source, subscriber) => {
-        let _questions: string[] | null = [];
-        let _lastQuestion: string | null = null;
+      (source) => {
+        return new Observable<string[]>((subscriber) => {
+          let _questions: string[] | null = [];
+          let _lastQuestion: string | null = null;
 
-        source.subscribe(
-          createOperatorSubscriber(
-            subscriber,
-            (value) => {
+          source.subscribe({
+            next: (value) => {
               _questions?.push(...value.questions);
               _lastQuestion = value.chunk;
               subscriber.next(value.questions);
             },
-            () => {
+            complete: () => {
               if (_lastQuestion) {
                 _questions?.push(_lastQuestion);
                 subscriber.next([_lastQuestion]);
@@ -158,15 +154,15 @@ export class ExamService {
                 ),
                 subscriber.complete(),
               ]);
+
+              return () => {
+                _questions = null;
+                _lastQuestion = null;
+              };
             },
-            void 0,
-            () => {
-              _questions = null;
-              _lastQuestion = null;
-            },
-          ),
-        );
-      }),
+          });
+        });
+      },
       concatMap((questions) => of(...questions)),
       filter((question) => !isEmpty(question)),
       map<string, GenerateExamMessageEvent>((question) => {
@@ -245,34 +241,31 @@ export class ExamService {
       filter(({ isScored }) => isScored),
       concatMap(({ comments }) => of(...comments.split(SPEARATOR))),
       filter((scoreOrComments) => !!scoreOrComments),
-      map<string, ReviewExamMessageEvent>((scoreOrComments) => ({
-        data: scoreOrComments,
-      })),
-      endWith<ReviewExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
-      operate((source, subscriber) => {
-        let scoreAndComments: string | null = '';
+      (source) => {
+        return new Observable<string>((subscriber) => {
+          let scoreAndComments: string | null = '';
 
-        source.subscribe(
-          createOperatorSubscriber(
-            subscriber,
-            (scoreOrComments) => {
+          source.subscribe({
+            next: (scoreOrComments) => {
               scoreAndComments = (scoreAndComments ?? '') + scoreOrComments;
               subscriber.next(scoreOrComments);
             },
-            () => {
+            complete: () => {
               this.examRepository.update(
                 { id, status: ExamStatus.Reviewing },
                 Exam.reviewed(scoreAndComments ?? ''),
               );
               subscriber.complete();
-            },
-            void 0,
-            () => {
+
               scoreAndComments = null;
             },
-          ),
-        );
-      }),
+          });
+        });
+      },
+      map<string, ReviewExamMessageEvent>((scoreOrComments) => ({
+        data: scoreOrComments,
+      })),
+      endWith<ReviewExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
   }
 

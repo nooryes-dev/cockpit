@@ -48,9 +48,9 @@ export class ExamController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Sse('/generate/:id')
-  generate(@Param('id', ParseIntPipe) id: number) {
-    return this.examService.generate(id);
+  @Sse('/questions/:id')
+  questions(@Param('id', ParseIntPipe) id: number) {
+    return this.examService.questions(id);
   }
 
   @ApiBearerAuth()

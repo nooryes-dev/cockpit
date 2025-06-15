@@ -14,7 +14,7 @@ export const useQuestionsPrompt = (position: string) => {
   });
 };
 
-export interface Questioning {
+export interface Questionsing {
   questions: string[];
   chunk: string;
 }
