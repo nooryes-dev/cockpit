@@ -4,6 +4,7 @@ import { _Preset } from './_preset.entity';
 import { User } from './user.entity';
 import { tryParse } from '@aiszlab/relax';
 import { SPEARATOR } from 'src/exam/constants';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 export enum ExamStatus {
   // 初始化
@@ -107,6 +108,21 @@ export class Exam extends _Preset {
    */
   get scoreAndComments() {
     return `${this.score}${SPEARATOR}${this.comments}`;
+  }
+
+  /**
+   * review 完成的更新对象
+   */
+  public static reviewed(
+    scoreAndComments: string | null,
+  ): QueryDeepPartialEntity<Exam> {
+    const [score, ...comments] = (scoreAndComments ?? '').split(SPEARATOR);
+
+    return {
+      score: Number(score) || 0,
+      comments: comments.join(''),
+      status: ExamStatus.Frozen,
+    };
   }
 }
 

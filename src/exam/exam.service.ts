@@ -9,16 +9,7 @@ import {
   isSubmittable,
 } from '@/libs/database/entities/exam.entity';
 import { In, Not, type Repository } from 'typeorm';
-import {
-  concatMap,
-  endWith,
-  filter,
-  map,
-  Observable,
-  of,
-  reduce,
-  scan,
-} from 'rxjs';
+import { concatMap, endWith, filter, map, Observable, of, scan } from 'rxjs';
 import { usePositionPrompt } from './prompts/position.prompt';
 import {
   type Questioning,
@@ -53,7 +44,7 @@ export class ExamService {
       model: 'qwen-turbo-2025-04-28',
       configuration: {
         baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-        apiKey: configService.alibabaApiKey,
+        apiKey: this.configService.alibabaApiKey,
       },
     });
   }
@@ -238,21 +229,6 @@ export class ExamService {
         });
     });
 
-    _reviewer$.pipe(reduce((prev, chunk) => prev + chunk, '')).subscribe({
-      next: async (scoreAndComments) => {
-        const [score, ...comments] = scoreAndComments.split(SPEARATOR);
-
-        await this.examRepository.update(
-          { id, status: ExamStatus.Submitted },
-          {
-            score: Number(score) || 0,
-            comments: comments.join(''),
-            status: ExamStatus.Frozen,
-          },
-        );
-      },
-    });
-
     return _reviewer$.pipe(
       scan<string, Reviewing>(
         (prev, comments) => {
@@ -273,6 +249,30 @@ export class ExamService {
         data: scoreOrComments,
       })),
       endWith<ReviewExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
+      operate((source, subscriber) => {
+        let scoreAndComments: string | null = '';
+
+        source.subscribe(
+          createOperatorSubscriber(
+            subscriber,
+            (scoreOrComments) => {
+              scoreAndComments = (scoreAndComments ?? '') + scoreOrComments;
+              subscriber.next(scoreOrComments);
+            },
+            () => {
+              this.examRepository.update(
+                { id, status: ExamStatus.Reviewing },
+                Exam.reviewed(scoreAndComments ?? ''),
+              );
+              subscriber.complete();
+            },
+            void 0,
+            () => {
+              scoreAndComments = null;
+            },
+          ),
+        );
+      }),
     );
   }
 
