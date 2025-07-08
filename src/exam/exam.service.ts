@@ -56,6 +56,7 @@ export class ExamService {
     if (
       (await this.examRepository.countBy({
         status: Not(In([ExamStatus.Frozen])),
+        createdById,
       })) > 0
     ) {
       throw new Error('存在未完成的面试间，不允许新建！');
