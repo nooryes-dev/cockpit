@@ -23,7 +23,7 @@ ${Array.from({ length: 10 })
 请你针对问题和回答给候选人打分，先给一个总分，然后每一题请给出详细的评价和评分（用百分制）
 评价和分数之间使用${SCORE_SEPARATOR}分隔，每题之间使用${SPEARATOR}，内容不要添加换行符
 示例如下：
-总分${SPEARATOR}评价内容${SCORE_SEPARATOR}80${SPEARATOR}评价内容${SCORE_SEPARATOR}90${SPEARATOR}评价内容${SCORE_SEPARATOR}70
+80${SPEARATOR}评价内容${SCORE_SEPARATOR}80${SPEARATOR}评价内容${SCORE_SEPARATOR}90${SPEARATOR}评价内容${SCORE_SEPARATOR}70
 `,
 ]);
 
