@@ -286,7 +286,15 @@ export class ExamService {
       filter((reviewed) => !isEmpty(reviewed)),
       map<string, ReviewExamMessageEvent>((reviewed) => {
         // reviewed 实际上是评价和分数的拼接，这里再切割一次，转成对象给到前端
+        // 如果 score 没有值，直接返回分析结果（总分就是这样）
         const { 0: analysis, 1: score } = reviewed.split(SCORE_SEPARATOR);
+
+        if (!score) {
+          return {
+            data: analysis,
+            type: StatusCode.Continue,
+          };
+        }
 
         return {
           data: {
