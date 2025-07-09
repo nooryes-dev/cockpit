@@ -1,6 +1,6 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { SPEARATOR } from '../constants';
-import { at } from '@aiszlab/relax';
+import { SCORE_SEPARATOR, SPEARATOR } from '../constants';
+// import { at } from '@aiszlab/relax';
 
 const template = ChatPromptTemplate.fromMessages([
   ChatPromptTemplate.fromTemplate(
@@ -19,7 +19,12 @@ ${Array.from({ length: 10 })
   })
   .join('；')}。`,
   ),
-  `请你针对问题和回答给候选人打分，并且详细评价下候选人的回答，分数请用数字表示，分数和评价之间用${SPEARATOR}拼接，参考样例：8${SPEARATOR}候选人整理能力如何，优点是什么，缺点是什么，需要改进的地方`,
+  `
+请你针对问题和回答给候选人打分，每一题请给出详细的评价和评分（用百分制）
+评价和分数之间使用${SCORE_SEPARATOR}分隔，每题之间使用${SPEARATOR}
+示例如下：
+问题1的评价${SCORE_SEPARATOR}80${SPEARATOR}问题2的评价${SCORE_SEPARATOR}90${SPEARATOR}问题3的评价${SCORE_SEPARATOR}70
+`,
 ]);
 
 export const useReviewPrompt = ({
@@ -35,12 +40,12 @@ export const useReviewPrompt = ({
     position,
     ...Object.fromEntries<string>(
       Array.from({ length: 10 }).map((_, index) => {
-        return [`question${index + 1}`, at(questions, index) ?? ''];
+        return [`question${index + 1}`, questions.at(index) ?? ''];
       }),
     ),
     ...Object.fromEntries<string>(
       Array.from({ length: 10 }).map((_, index) => {
-        return [`answer${index + 1}`, at(answers, index) ?? ''];
+        return [`answer${index + 1}`, answers.at(index) ?? ''];
       }),
     ),
   });

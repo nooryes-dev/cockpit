@@ -226,6 +226,8 @@ export class ExamService {
         });
     });
 
+    return _reviewer$;
+
     return _reviewer$.pipe(
       scan<string, Reviewing>(
         (prev, comments) => {
