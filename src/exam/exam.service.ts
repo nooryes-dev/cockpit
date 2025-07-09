@@ -330,4 +330,13 @@ export class ExamService {
       count,
     ];
   }
+
+  /**
+   * @description 获取考试详情
+   */
+  async exam(id: number) {
+    const _exam = await this.examRepository.findOneBy({ id });
+    if (!_exam) throw new Error('考试不存在');
+    return _exam;
+  }
 }

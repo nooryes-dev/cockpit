@@ -82,4 +82,13 @@ export class ExamController {
   exams(@Query() queryExamsDto: QueryExamsDto, @WhoAmI() { id }: User) {
     return this.examService.exmas(queryExamsDto, id);
   }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '获取面试间详情' })
+  @ApiUnifiedResponse(Exam)
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id')
+  exam(@Param('id', ParseIntPipe) id: number) {
+    return this.examService.exam(id);
+  }
 }
