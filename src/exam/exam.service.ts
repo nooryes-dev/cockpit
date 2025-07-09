@@ -337,6 +337,12 @@ export class ExamService {
   async exam(id: number) {
     const _exam = await this.examRepository.findOneBy({ id });
     if (!_exam) throw new Error('考试不存在');
-    return _exam;
+
+    return {
+      id: _exam.id,
+      position: _exam.position,
+      answers: _exam.answerList,
+      questions: _exam.questionList,
+    };
   }
 }
