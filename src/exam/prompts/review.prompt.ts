@@ -23,7 +23,7 @@ ${Array.from({ length: 10 })
 请你针对问题和回答给候选人打分，每一题请给出详细的评价和评分（用百分制）
 评价和分数之间使用${SCORE_SEPARATOR}分隔，每题之间使用${SPEARATOR}
 示例如下：
-问题1的评价${SCORE_SEPARATOR}80${SPEARATOR}问题2的评价${SCORE_SEPARATOR}90${SPEARATOR}问题3的评价${SCORE_SEPARATOR}70
+评价内容${SCORE_SEPARATOR}80${SPEARATOR}评价内容${SCORE_SEPARATOR}90${SPEARATOR}评价内容${SCORE_SEPARATOR}70
 `,
 ]);
 
@@ -52,6 +52,6 @@ export const useReviewPrompt = ({
 };
 
 export interface Reviewing {
-  isScored: boolean;
-  comments: string;
+  revieweds: string[];
+  chunk: string;
 }

@@ -226,48 +226,70 @@ export class ExamService {
         });
     });
 
-    return _reviewer$;
-
     return _reviewer$.pipe(
       scan<string, Reviewing>(
-        (prev, comments) => {
+        (prev, chunk) => {
+          const _chunk = prev.chunk + chunk;
+
+          if (!_chunk.includes(SPEARATOR)) {
+            return { revieweds: [], chunk: _chunk };
+          }
+
+          const _questions = _chunk.split(SPEARATOR);
           return {
-            isScored: prev.isScored || comments.includes(SPEARATOR),
-            comments: prev.isScored ? comments : prev.comments + comments,
+            revieweds: _questions.slice(0, -1),
+            chunk: _questions.at(-1) ?? '',
           };
         },
         {
-          isScored: false,
-          comments: '',
+          revieweds: [],
+          chunk: '',
         },
       ),
-      filter(({ isScored }) => isScored),
-      concatMap(({ comments }) => of(...comments.split(SPEARATOR))),
-      filter((scoreOrComments) => !!scoreOrComments),
       (source) => {
-        return new Observable<string>((subscriber) => {
-          let scoreAndComments: string | null = '';
+        return new Observable<string[]>((subscriber) => {
+          let _revieweds: string[] | null = [];
+          let _lastReviewed: string | null = null;
 
           source.subscribe({
-            next: (scoreOrComments) => {
-              scoreAndComments = (scoreAndComments ?? '') + scoreOrComments;
-              subscriber.next(scoreOrComments);
+            next: (value) => {
+              _revieweds?.push(...value.revieweds);
+              _lastReviewed = value.chunk;
+              subscriber.next(value.revieweds);
             },
             complete: () => {
-              this.examRepository.update(
-                { id, status: ExamStatus.Reviewing },
-                Exam.reviewed(scoreAndComments ?? ''),
-              );
-              subscriber.complete();
+              if (_lastReviewed) {
+                _revieweds?.push(_lastReviewed);
+                subscriber.next([_lastReviewed]);
+              }
 
-              scoreAndComments = null;
+              Promise.all([
+                this.examRepository.update(
+                  { id, status: ExamStatus.Generating },
+                  {
+                    comments: JSON.stringify(_revieweds),
+                    status: ExamStatus.Frozen,
+                  },
+                ),
+                subscriber.complete(),
+              ]);
+
+              return () => {
+                _revieweds = null;
+                _lastReviewed = null;
+              };
             },
           });
         });
       },
-      map<string, ReviewExamMessageEvent>((scoreOrComments) => ({
-        data: scoreOrComments,
-      })),
+      concatMap((revieweds) => of(...revieweds)),
+      filter((reviewed) => !isEmpty(reviewed)),
+      map<string, ReviewExamMessageEvent>((reviewed) => {
+        return {
+          data: reviewed,
+          type: StatusCode.Continue,
+        };
+      }),
       endWith<ReviewExamMessageEvent>(COMPLETED_MESSAGE_EVENT()),
     );
   }
