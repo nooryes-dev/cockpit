@@ -1,3 +1,6 @@
 import { MessageEvent } from 'typings/response.types';
 
-export type ReviewExamMessageEvent = MessageEvent<string | null>;
+export type ReviewExamMessageEvent = MessageEvent<{
+  analysis: string;
+  score: string;
+} | null>;

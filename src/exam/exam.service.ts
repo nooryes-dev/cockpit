@@ -16,7 +16,7 @@ import {
   useQuestionsPrompt,
 } from './prompts/questions.prompt';
 import { type SubmitExamDto } from './dto/submit-exam.dto';
-import { SPEARATOR } from './constants';
+import { SCORE_SEPARATOR, SPEARATOR } from './constants';
 import { type Reviewing, useReviewPrompt } from './prompts/review.prompt';
 import { isEmpty } from '@aiszlab/relax';
 import { COMPLETED_MESSAGE_EVENT, StatusCode } from 'typings/response.types';
@@ -285,8 +285,14 @@ export class ExamService {
       concatMap((revieweds) => of(...revieweds)),
       filter((reviewed) => !isEmpty(reviewed)),
       map<string, ReviewExamMessageEvent>((reviewed) => {
+        // reviewed 实际上是评价和分数的拼接，这里再切割一次，转成对象给到前端
+        const { 0: analysis, 1: score } = reviewed.split(SCORE_SEPARATOR);
+
         return {
-          data: reviewed,
+          data: {
+            analysis,
+            score,
+          },
           type: StatusCode.Continue,
         };
       }),
