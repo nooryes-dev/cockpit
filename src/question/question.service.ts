@@ -244,21 +244,12 @@ export class QuestionService {
     batchImport: Omit<BatchImportDto, 'importType'>,
     createdById: number,
   ) {
-    // 反序列化 content
-    const _content =
-      (tryParse(batchImport.content) as
-        | {
-            title: string;
-            content: string;
-          }[]
-        | null) ?? [];
-
-    if (_content.length === 0) {
+    if (batchImport.content.length === 0) {
       throw new BadRequestException('导入内容格式错误');
     }
 
     const _questions = await this.questionRepository.save(
-      _content.map(({ title, content }) => {
+      batchImport.content.map(({ title, content }) => {
         return this.questionRepository.create({
           topic: title,
           answer: content,

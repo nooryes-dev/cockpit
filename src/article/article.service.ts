@@ -257,21 +257,12 @@ export class ArticleService {
       return await this.questionService.batchImport(batchImport, createdById);
     }
 
-    // 反序列化 content
-    const _content =
-      (tryParse(batchImport.content) as
-        | {
-            title: string;
-            content: string;
-          }[]
-        | null) ?? [];
-
-    if (_content.length === 0) {
+    if (batchImport.content.length === 0) {
       throw new BadRequestException('导入内容格式错误');
     }
 
     const _articles = await this.articleRepository.save(
-      _content.map(({ title, content }) => {
+      batchImport.content.map(({ title, content }) => {
         return this.articleRepository.create({
           title,
           content,

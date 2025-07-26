@@ -20,5 +20,5 @@ export class BatchImportDto {
   @ApiProperty({
     description: '导入内容',
   })
-  content: string;
+  content: { title: string; content: string }[];
 }
