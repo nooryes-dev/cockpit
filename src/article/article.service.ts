@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { Repository } from 'typeorm';
@@ -18,6 +18,9 @@ import {
   CountByTechStackCodeDto,
   CountedByTechStackCodeDto,
 } from './dto/count-by-tech-stack.dto';
+import { BatchImportDto, ImportType } from './dto/batch-import.dto';
+import { tryParse } from '@aiszlab/relax';
+import { QuestionService } from 'src/question/question.service';
 
 @Injectable()
 export class ArticleService {
@@ -25,6 +28,7 @@ export class ArticleService {
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
     private readonly userService: UserService,
+    private readonly questionService: QuestionService,
   ) {}
 
   /**
@@ -242,5 +246,41 @@ export class ArticleService {
     }
 
     return await qb.getRawOne<CountedByTechStackCodeDto>();
+  }
+
+  /**
+   * @description 批量导入
+   */
+  async batchImport(batchImport: BatchImportDto, createdById: number) {
+    // 如果是导入问题，调用【问题】服务
+    if (batchImport.importType === ImportType.Questions) {
+      return await this.questionService.batchImport(batchImport, createdById);
+    }
+
+    // 反序列化 content
+    const _content =
+      (tryParse(batchImport.content) as
+        | {
+            title: string;
+            content: string;
+          }[]
+        | null) ?? [];
+
+    if (_content.length === 0) {
+      throw new BadRequestException('导入内容格式错误');
+    }
+
+    const _articles = await this.articleRepository.save(
+      _content.map(({ title, content }) => {
+        return this.articleRepository.create({
+          title,
+          content,
+          categoryCode: batchImport.categoryCode,
+          createdById,
+        });
+      }),
+    );
+
+    return _articles.length > 0;
   }
 }

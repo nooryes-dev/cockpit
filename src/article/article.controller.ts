@@ -39,6 +39,7 @@ import {
   CountByTechStackCodeDto,
   CountedByTechStackCodeDto,
 } from './dto/count-by-tech-stack.dto';
+import { BatchImportDto } from './dto/batch-import.dto';
 
 @ApiTags('知识点')
 @ApiExtraModels(Article, SearchedArticleDto, CountedByTechStackCodeDto)
@@ -146,5 +147,14 @@ export class ArticleController {
       ArticleStatus.Withdrawn,
       user.id,
     );
+  }
+
+  @ApiOperation({ summary: '批量导入' })
+  @ApiBearerAuth()
+  @ApiUnifiedResponse({ type: 'boolean' })
+  @UseGuards(JwtAuthGuard)
+  @Post('batch-import')
+  batchImport(@Body() batchImportDto: BatchImportDto, @WhoAmI() user: User) {
+    return this.articleService.batchImport(batchImportDto, user.id);
   }
 }

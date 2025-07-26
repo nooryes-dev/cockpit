@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Repository } from 'typeorm';
@@ -18,6 +18,8 @@ import {
   CountByTechStackCodeDto,
   CountedByTechStackCodeDto,
 } from './dto/count-by-tech-stack.dto';
+import { BatchImportDto } from 'src/article/dto/batch-import.dto';
+import { tryParse } from '@aiszlab/relax';
 
 @Injectable()
 export class QuestionService {
@@ -233,5 +235,39 @@ export class QuestionService {
         })
       ).affected ?? 0) > 0
     );
+  }
+
+  /**
+   * @description 批量导入
+   */
+  async batchImport(
+    batchImport: Omit<BatchImportDto, 'importType'>,
+    createdById: number,
+  ) {
+    // 反序列化 content
+    const _content =
+      (tryParse(batchImport.content) as
+        | {
+            title: string;
+            content: string;
+          }[]
+        | null) ?? [];
+
+    if (_content.length === 0) {
+      throw new BadRequestException('导入内容格式错误');
+    }
+
+    const _questions = await this.questionRepository.save(
+      _content.map(({ title, content }) => {
+        return this.questionRepository.create({
+          topic: title,
+          answer: content,
+          categoryCode: batchImport.categoryCode,
+          createdById,
+        });
+      }),
+    );
+
+    return _questions.length > 0;
   }
 }
