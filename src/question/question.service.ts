@@ -70,6 +70,7 @@ export class QuestionService {
       .where('1 = 1')
       .orderBy('question.id')
       .offset((page - 1) * pageSize)
+      .orderBy('question.updatedAt', 'DESC')
       .limit(pageSize);
 
     if (!!categoryCode) {
