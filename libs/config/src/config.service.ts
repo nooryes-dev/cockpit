@@ -40,18 +40,18 @@ export class ConfigService {
   }
 
   /**
-   * @description 阿里云 oss 访问密钥 id
+   * @description 阿里云访问密钥 id
    */
-  get aliyunOssAccessKeyId() {
-    return this.#get(NameSpaceToken.Aliyun, PropertyToken.OssAccessKeyId) ?? '';
+  get aliyunAccessKeyId() {
+    return this.#get(NameSpaceToken.Aliyun, PropertyToken.AccessKeyId) ?? '';
   }
 
   /**
-   * @description 阿里云 oss 访问密钥 secret
+   * @description 阿里云访问密钥 secret
    */
-  get aliyunOssAccessKeySecret() {
+  get aliyunAccessKeySecret() {
     return (
-      this.#get(NameSpaceToken.Aliyun, PropertyToken.OssAccessKeySecret) ?? ''
+      this.#get(NameSpaceToken.Aliyun, PropertyToken.AccessKeySecret) ?? ''
     );
   }
 

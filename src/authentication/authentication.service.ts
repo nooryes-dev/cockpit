@@ -3,10 +3,20 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { STS } from 'ali-oss';
+import Dm20151123 from '@alicloud/dm20151123';
+import {
+  Params,
+  OpenApiRequest,
+  Config as OpenApiConfig,
+} from '@alicloud/openapi-client';
+import Credential, { Config } from '@alicloud/credentials';
+import { RuntimeOptions } from '@alicloud/tea-util';
+import { SendRegisterCaptchaDto } from '../authentication/dto/send-register-captcha.dto';
 
 @Injectable()
 export class AuthenticationService {
   private readonly aliyunOssSts: STS;
+  private readonly captchaSender: Dm20151123;
 
   constructor(
     private readonly configService: ConfigService,
@@ -14,9 +24,25 @@ export class AuthenticationService {
   ) {
     // 初始化阿里云 STS 实例
     this.aliyunOssSts = new STS({
-      accessKeyId: this.configService.aliyunOssAccessKeyId,
-      accessKeySecret: this.configService.aliyunOssAccessKeySecret,
+      accessKeyId: this.configService.aliyunAccessKeyId,
+      accessKeySecret: this.configService.aliyunAccessKeySecret,
     });
+
+    // 初始化邮件发送实例
+    const credential = new Credential(
+      new Config({
+        type: 'access_key',
+        accessKeyId: configService.aliyunAccessKeyId,
+        accessKeySecret: configService.aliyunAccessKeySecret,
+      }),
+    );
+
+    const config = new OpenApiConfig({
+      credential: credential,
+    });
+    config.endpoint = `dm.aliyuncs.com`;
+
+    this.captchaSender = new Dm20151123(config);
   }
 
   /**
@@ -64,5 +90,37 @@ export class AuthenticationService {
       throw new ForbiddenException('您不是管理员，无法登录后台！');
     }
     return _user;
+  }
+
+  /**
+   * @description 发送注册邮件
+   */
+  async sendRegisterCaptcha(sendRegisterCaptchaDto: SendRegisterCaptchaDto) {
+    const params = new Params({
+      action: 'SingleSendMail',
+      version: '2015-11-23',
+      protocol: 'HTTPS',
+      method: 'POST',
+      authType: 'AK',
+      style: 'RPC',
+      pathname: `/`,
+      reqBodyType: 'formData',
+      bodyType: 'json',
+    });
+
+    await this.captchaSender.callApi(
+      params,
+      new OpenApiRequest({
+        body: {
+          AccountName: 'support@account.nooryes.cn',
+          AddressType: 1,
+          ReplyToAddress: false,
+          ToAddress: sendRegisterCaptchaDto.to,
+          Subject: '验证码',
+          TextBody: Math.random().toString(),
+        },
+      }),
+      new RuntimeOptions(),
+    );
   }
 }

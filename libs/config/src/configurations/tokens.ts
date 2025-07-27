@@ -11,8 +11,8 @@ export enum PropertyToken {
   Code = 'code',
   PublicKey = 'public-key',
   PrivateKey = 'private-key',
-  OssAccessKeyId = 'oss-access-key-id',
-  OssAccessKeySecret = 'oss-access-key-secret',
+  AccessKeyId = 'access-key-id',
+  AccessKeySecret = 'access-key-secret',
   OssRoleArn = 'oss-role-arn',
   Admins = 'admins',
 

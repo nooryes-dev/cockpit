@@ -21,6 +21,10 @@
   },
   "dependencies": {
     "@aiszlab/relax": "2.0.6-beta.6",
+    "@alicloud/credentials": "^2.4.4",
+    "@alicloud/dm20151123": "^1.4.0",
+    "@alicloud/openapi-client": "^0.4.15",
+    "@alicloud/tea-util": "^1.4.10",
     "@langchain/core": "^0.3.57",
     "@langchain/openai": "^0.5.12",
     "@nestjs/common": "^10.4.18",

@@ -25,6 +25,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { OssStsResponse } from './dto/oss-sts.dto';
 import { IsJwtValidDto } from './dto/is-jwt-valid.dto';
+import { SendRegisterCaptchaDto } from './dto/send-register-captcha.dto';
 
 @ApiTags('认证')
 @ApiExtraModels(OssStsResponse)
@@ -86,6 +87,15 @@ export class AuthenticationController {
   async isJwtValid(@WhoAmI() user: User, @Query() query: IsJwtValidDto) {
     return (
       !!user && (await this.authenticationService.signIn(user.id, query.to))
+    );
+  }
+
+  @ApiOperation({ description: '注册验证码' })
+  @ApiUnifiedResponse({ type: 'boolean' })
+  @Post('send-register-captcha')
+  sendRegisterCaptcha(@Body() sendRegisterCaptchaDto: SendRegisterCaptchaDto) {
+    return this.authenticationService.sendRegisterCaptcha(
+      sendRegisterCaptchaDto,
     );
   }
 }
