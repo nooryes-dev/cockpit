@@ -19,6 +19,15 @@ export class User extends _Preset {
   })
   username: string;
 
+  @ApiProperty({ description: '用户邮箱' })
+  @Column({
+    name: 'email',
+    type: 'varchar',
+    unique: true,
+    length: 128,
+  })
+  email: string;
+
   @ApiProperty({ description: '头像', type: String })
   @Column({
     name: 'avatar',

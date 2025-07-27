@@ -13,4 +13,14 @@ export class SignUpDto {
     description: '密码（经过公钥加密）',
   })
   password: string;
+
+  @ApiProperty({
+    description: '用户邮箱',
+  })
+  email: string;
+
+  @ApiProperty({
+    description: '注册验证码',
+  })
+  captcha: string;
 }
