@@ -18,12 +18,30 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/libs/database": ["libs/database/src"],
-      "@/libs/database/*": ["libs/database/src/*"],
-      "@/libs/config": ["libs/config/src"],
-      "@/libs/config/*": ["libs/config/src/*"],
-      "@/libs/passport": ["libs/passport/src"],
-      "@/libs/passport/*": ["libs/passport/src/*"]
+      "@/libs/database": [
+        "libs/database/src"
+      ],
+      "@/libs/database/*": [
+        "libs/database/src/*"
+      ],
+      "@/libs/config": [
+        "libs/config/src"
+      ],
+      "@/libs/config/*": [
+        "libs/config/src/*"
+      ],
+      "@/libs/passport": [
+        "libs/passport/src"
+      ],
+      "@/libs/passport/*": [
+        "libs/passport/src/*"
+      ],
+      "@/libs/cache": [
+        "libs/cache/src"
+      ],
+      "@/libs/cache/*": [
+        "libs/cache/src/*"
+      ]
     }
   }
 }

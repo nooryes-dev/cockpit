@@ -77,11 +77,12 @@ export class UserService {
   /**
    * @description 注册
    */
-  async signUp({ password, username }: SignUpDto) {
+  async signUp({ password, username, email }: Omit<SignUpDto, 'captcha'>) {
     return await this.userRepository.save(
       this.userRepository.create({
         username,
         password,
+        email,
       }),
     );
   }

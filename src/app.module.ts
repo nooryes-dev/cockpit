@@ -10,11 +10,14 @@ import { CategoryModule } from './category/category.module';
 import { ArticleModule } from './article/article.module';
 import { QuestionModule } from './question/question.module';
 import { ExamModule } from './exam/exam.module';
+import { CacheModule } from '@/libs/cache';
 
 @Module({
   imports: [
     // 配置模块
     ConfigModule,
+    // 缓存模块
+    CacheModule,
     // 数据库模块
     DatabaseModule,
     // jwt 模块

@@ -1,5 +1,9 @@
 import { ConfigService } from '@/libs/config';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { STS } from 'ali-oss';
@@ -12,6 +16,7 @@ import {
 import Credential, { Config } from '@alicloud/credentials';
 import { RuntimeOptions } from '@alicloud/tea-util';
 import { SendRegisterCaptchaDto } from '../authentication/dto/send-register-captcha.dto';
+import { CacheService } from '@/libs/cache';
 
 @Injectable()
 export class AuthenticationService {
@@ -21,6 +26,7 @@ export class AuthenticationService {
   constructor(
     private readonly configService: ConfigService,
     private readonly userService: UserService,
+    private readonly cacheService: CacheService,
   ) {
     // 初始化阿里云 STS 实例
     this.aliyunOssSts = new STS({
@@ -61,11 +67,21 @@ export class AuthenticationService {
   /**
    * @description 注册
    */
-  signUp({ password, ..._signUp }: SignUpDto) {
-    return this.userService.signUp({
+  async signUp({ password, captcha, ..._signUp }: SignUpDto) {
+    // 校验注册验证码是否匹配
+    const isCaptchaValid =
+      captcha === (await this.cacheService.getRegisterCaptcha(_signUp.email));
+
+    if (!isCaptchaValid) {
+      throw new BadRequestException('验证码校验错误');
+    }
+
+    const _user = await this.userService.signUp({
       ..._signUp,
       password: this.userService.decryptByRsaPrivateKey(password),
     });
+
+    return _user;
   }
 
   /**
@@ -108,6 +124,9 @@ export class AuthenticationService {
       bodyType: 'json',
     });
 
+    const _captcha = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, '0');
     await this.captchaSender.callApi(
       params,
       new OpenApiRequest({
@@ -117,12 +136,13 @@ export class AuthenticationService {
           ReplyToAddress: false,
           ToAddress: sendRegisterCaptchaDto.to,
           Subject: '验证码',
-          TextBody: Math.floor(Math.random() * 1000000)
-            .toString()
-            .padStart(6, '0'),
+          TextBody: _captcha,
         },
       }),
       new RuntimeOptions(),
     );
+
+    this.cacheService.setRegisterCaptcha(sendRegisterCaptchaDto.to, _captcha);
+    return true;
   }
 }
