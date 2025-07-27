@@ -23,7 +23,6 @@ export class User extends _Preset {
   @Column({
     name: 'email',
     type: 'varchar',
-    unique: true,
     length: 128,
   })
   email: string;

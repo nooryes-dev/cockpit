@@ -117,7 +117,9 @@ export class AuthenticationService {
           ReplyToAddress: false,
           ToAddress: sendRegisterCaptchaDto.to,
           Subject: '验证码',
-          TextBody: Math.random().toString(),
+          TextBody: Math.floor(Math.random() * 1000000)
+            .toString()
+            .padStart(6, '0'),
         },
       }),
       new RuntimeOptions(),
