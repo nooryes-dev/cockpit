@@ -26,6 +26,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import { ConfigService } from '@/libs/config';
 import { GenerateExamMessageEvent } from './dto/generate-exam.dto';
 import { ReviewExamMessageEvent } from './dto/review-exam.dto';
+import { CacheService } from '@/libs/cache';
 
 @Injectable()
 export class ExamService {
@@ -36,6 +37,7 @@ export class ExamService {
     private readonly examRepository: Repository<Exam>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
   ) {
     this.#robot = new ChatOpenAI({
       model: 'qwen-turbo-2025-04-28',
@@ -61,6 +63,9 @@ export class ExamService {
     ) {
       throw new Error('存在未完成的面试间，不允许新建！');
     }
+
+    // 计算用户额度，超额不允许创建
+    await this.cacheService.increaseExamFreeQuota(createdById);
 
     const position = await usePositionPrompt(createExamDto.position)
       .then((_prompt) => this.#robot.invoke(_prompt))
