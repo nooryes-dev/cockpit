@@ -1,4 +1,4 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Unique } from 'typeorm';
 import { _Preset } from './_preset.entity';
 import { hashSync } from 'bcrypt';
 import { BadRequestException } from '@nestjs/common';
@@ -9,7 +9,17 @@ import { ApiProperty, ApiSchema } from '@nestjs/swagger';
 @Entity({
   name: 'user',
 })
+@Unique(['email'])
 export class User extends _Preset {
+  @ApiProperty({ description: '用户邮箱' })
+  @Column({
+    name: 'email',
+    type: 'varchar',
+    length: 128,
+    nullable: false,
+  })
+  email: string;
+
   @ApiProperty({ description: '用户名' })
   @Column({
     name: 'username',
@@ -18,14 +28,6 @@ export class User extends _Preset {
     length: 36,
   })
   username: string;
-
-  @ApiProperty({ description: '用户邮箱' })
-  @Column({
-    name: 'email',
-    type: 'varchar',
-    length: 128,
-  })
-  email: string;
 
   @ApiProperty({ description: '头像', type: String })
   @Column({

@@ -70,7 +70,7 @@ export class AuthenticationController {
     return this.authenticationService.getPublicKey();
   }
 
-  @ApiOperation({ description: '获取 OSS 临时凭证' })
+  @ApiOperation({ description: '获取`OSS`临时凭证' })
   @ApiBearerAuth()
   @ApiUnifiedResponse(OssStsResponse)
   @UseGuards(JwtAuthGuard)
@@ -79,7 +79,7 @@ export class AuthenticationController {
     return this.authenticationService.getOssSts();
   }
 
-  @ApiOperation({ description: '验证 jwt 是否有效' })
+  @ApiOperation({ description: '验证`jwt`是否有效' })
   @ApiBearerAuth()
   @ApiUnifiedResponse({ type: 'boolean', description: 'jwt 是否有效' })
   @UseGuards(new JwtAuthGuard(false))

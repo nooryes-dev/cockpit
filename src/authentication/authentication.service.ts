@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -68,6 +69,12 @@ export class AuthenticationService {
    * @description 注册
    */
   async signUp({ password, captcha, ..._signUp }: SignUpDto) {
+    // 邮箱不允许重复注册
+    const _isRegistered = await this.userService.isRegistered(_signUp.email);
+    if (_isRegistered) {
+      throw new InternalServerErrorException('邮箱已被使用！');
+    }
+
     // 校验注册验证码是否匹配
     const isCaptchaValid =
       captcha === (await this.cacheService.getRegisterCaptcha(_signUp.email));
@@ -112,6 +119,14 @@ export class AuthenticationService {
    * @description 发送注册邮件
    */
   async sendRegisterCaptcha(sendRegisterCaptchaDto: SendRegisterCaptchaDto) {
+    // 校验邮箱是否已经被使用
+    const _isRegistered = await this.userService.isRegistered(
+      sendRegisterCaptchaDto.to,
+    );
+    if (_isRegistered) {
+      throw new InternalServerErrorException('邮箱已被使用！');
+    }
+
     const params = new Params({
       action: 'SingleSendMail',
       version: '2015-11-23',

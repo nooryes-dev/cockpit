@@ -18,6 +18,17 @@ export class UserService {
   ) {}
 
   /**
+   * @description 校验邮箱是否已经被注册
+   */
+  async isRegistered(email: string) {
+    return (
+      (await this.userRepository.countBy({
+        email,
+      })) > 0
+    );
+  }
+
+  /**
    * @description 修改用户密码
    */
   async updatePassword(
