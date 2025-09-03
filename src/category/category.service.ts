@@ -150,6 +150,9 @@ export class CategoryService {
       .addSelect('category.name', 'name')
       .addSelect('techStack.name', 'techStackName')
       .addSelect('techStack.code', 'techStackCode')
+      .orderBy({
+        'category.updatedAt': 'DESC',
+      })
       .where('1 = 1');
 
     if (!!keyword) {
