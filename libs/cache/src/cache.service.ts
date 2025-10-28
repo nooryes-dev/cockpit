@@ -9,7 +9,7 @@ export class CacheService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   /**
-   * @description 缓存注册验证码
+   * 缓存注册验证码
    */
   setRegisterCaptcha(to: string, captcha: string) {
     this.cacheManager.set(
@@ -20,33 +20,33 @@ export class CacheService {
   }
 
   /**
-   * @description 获取注册验证码
+   * 获取注册验证码
    */
   async getRegisterCaptcha(to: string) {
     return await this.cacheManager.get<string>(CacheToken.RegisterCaptcha + to);
   }
 
   /**
-   * @description 用户面试间免费额度
+   * 用户面试间免费额度
    */
   async getExamFreeQuota(who: number) {
     return await this.cacheManager.get<number>(CacheToken.ExamFreeQuota + who);
   }
 
   /**
-   * @description 更新用户面试间免费额度
+   * 更新用户面试间免费额度
    */
   async increaseExamFreeQuota(who: number) {
-    const _quota = (await this.getExamFreeQuota(who)) ?? 0;
-    if (_quota >= 3) {
+    const quota = (await this.getExamFreeQuota(who)) ?? 0;
+    if (quota >= 3) {
       throw new BadRequestException('你今天已经使用完面试间免费额度了');
     }
 
-    const _ttl = dayjs().endOf('day').diff(dayjs());
+    const ttl = dayjs().endOf('day').valueOf() - dayjs().valueOf();
     return await this.cacheManager.set(
       CacheToken.ExamFreeQuota + who,
-      _quota + 1,
-      _ttl,
+      quota + 1,
+      Math.max(ttl, 1),
     );
   }
 }
