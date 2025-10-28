@@ -40,7 +40,7 @@ export class ExamService {
     private readonly cacheService: CacheService,
   ) {
     this.#robot = new ChatOpenAI({
-      model: 'qwen-turbo-2025-04-28',
+      model: 'qwen3-max',
       configuration: {
         baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         apiKey: this.configService.alibabaApiKey,
