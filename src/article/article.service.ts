@@ -134,7 +134,7 @@ export class ArticleService {
     page = 1,
     pageSize = 10,
     hasContent = 'y',
-    sequence = 'ASC',
+    sequence,
   }: SearchArticlesDto) {
     // 如果没有传入categoryCode，那么pageSize最多为20
     if (!categoryCode) {
@@ -152,15 +152,21 @@ export class ArticleService {
         'category.techStack',
         'techStack',
       )
-      .orderBy('article.updatedAt', sequence)
       .offset((page - 1) * pageSize)
       .limit(pageSize);
 
-    if (!!categoryCode) {
+    // 兼容前端的排序逻辑，前端传入顺序字段时，以更新时间作为排序字段，否则以创建时间作为排序字段
+    if (sequence) {
+      qb.orderBy('article.updatedAt', sequence);
+    } else {
+      qb.orderBy('article.createdAt', 'ASC');
+    }
+
+    if (categoryCode) {
       qb.andWhere('article.categoryCode = :categoryCode', { categoryCode });
     }
 
-    if (!!keyword) {
+    if (keyword) {
       qb.andWhere('article.title REGEXP :keyword', { keyword });
     }
 
