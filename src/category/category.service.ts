@@ -151,7 +151,7 @@ export class CategoryService {
       .addSelect('techStack.name', 'techStackName')
       .addSelect('techStack.code', 'techStackCode')
       .orderBy({
-        'category.createdBy': 'ASC',
+        'category.createdAt': 'ASC',
       })
       .where('1 = 1');
 
